@@ -50,19 +50,34 @@
     <!-- Main Content -->
     <main class="max-w-4xl mx-auto p-4 md:p-8 relative">
 
-        <!-- Settings Modal (Hidden by default) -->
-        <div id="settingsPanel" class="hidden mb-6 bg-gray-800 rounded-xl p-6 border border-gray-700 animate-fade-in">
+        <!-- Settings Modal -->
+        <div id="settingsPanel" class="hidden mb-6 bg-gray-800 rounded-xl p-6 border border-gray-700 animate-fade-in shadow-2xl">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="key" class="w-5 h-5 text-yellow-400"></i> API Configuration</h2>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-blue-400 hover:underline flex items-center gap-1">
+                    Get Free Key <i data-lucide="external-link" class="w-3 h-3"></i>
+                </a>
             </div>
-            <p class="text-gray-400 mb-4 text-sm bg-yellow-500/10 border border-yellow-500/20 p-3 rounded">
-                ⚠️ This tool requires your own <strong>Google Gemini API Key</strong> to work.
-            </p>
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Your API Key</label>
-            <input type="password" id="customApiKey" placeholder="Paste your API Key here (starts with AIza...)" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-sm mb-4 focus:border-blue-500 outline-none text-white">
-            <div class="flex justify-end gap-2">
+            
+            <div class="space-y-3 mb-6">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">API Key 1 (Primary)</label>
+                    <input type="password" id="apiKey1" placeholder="AIza..." class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-white">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">API Key 2 (Backup)</label>
+                    <input type="password" id="apiKey2" placeholder="AIza..." class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-white">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">API Key 3 (Backup)</label>
+                    <input type="password" id="apiKey3" placeholder="AIza..." class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-white">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <p class="text-xs text-gray-500">Keys are rotated automatically.</p>
                 <button onclick="saveSettings()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition-colors">
-                    Save Key
+                    Save All Keys
                 </button>
             </div>
         </div>
@@ -199,7 +214,7 @@
                         <div id="renderingOverlay" class="hidden absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-20">
                             <div class="loader mb-4 border-t-blue-500"></div>
                             <h2 class="text-2xl font-bold text-white mb-2">Rendering Video...</h2>
-                            <p class="text-gray-400 mb-6">Combining Scenes & Voice...</p>
+                            <p class="text-gray-400 mb-6">Stitching scenes & syncing audio...</p>
                             <div class="w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
                                 <div id="renderProgressBar" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
                             </div>
@@ -212,11 +227,15 @@
                         <div class="bg-green-900/20 border border-green-500/30 p-4 rounded-xl flex justify-between items-center">
                             <div>
                                 <h3 class="font-bold text-green-400">Video Ready!</h3>
-                                <p class="text-xs text-gray-400">File saved successfully.</p>
+                                <p class="text-xs text-gray-400">Download complete.</p>
                             </div>
                             <a id="downloadLink" href="#" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
                                 <i data-lucide="download" class="w-4 h-4"></i> Download
                             </a>
+                        </div>
+                        <div class="bg-blue-900/20 border border-blue-500/30 p-3 rounded-lg flex gap-2 text-xs text-blue-300">
+                            <i data-lucide="info" class="w-4 h-4 mt-0.5"></i>
+                            <p>If file is 0 bytes, try rendering again. The system now forces data chunks.</p>
                         </div>
                     </div>
                 </div>
@@ -241,7 +260,11 @@
     <script>
         // --- State ---
         let state = {
-            apiKey: localStorage.getItem('gemini_api_key') || '',
+            apiKeys: [
+                localStorage.getItem('gemini_key_1') || '',
+                localStorage.getItem('gemini_key_2') || '',
+                localStorage.getItem('gemini_key_3') || ''
+            ],
             topic: '',
             ratio: '16:9',
             duration: '60',
@@ -256,11 +279,12 @@
         lucide.createIcons();
         updateDurationOptions(); // Init options
         
-        // Load API Key if exists
-        if(state.apiKey) {
-            document.getElementById('customApiKey').value = state.apiKey;
+        // Check Keys
+        if(state.apiKeys.some(k => k)) {
+            document.getElementById('apiKey1').value = state.apiKeys[0];
+            document.getElementById('apiKey2').value = state.apiKeys[1];
+            document.getElementById('apiKey3').value = state.apiKeys[2];
         } else {
-            // Show red dot if missing
             document.getElementById('keyMissingDot').classList.remove('hidden');
         }
 
@@ -271,31 +295,38 @@
         }
 
         function saveSettings() {
-            const key = document.getElementById('customApiKey').value.trim();
-            if(!key) {
-                alert("Please enter a valid API Key!");
+            const k1 = document.getElementById('apiKey1').value.trim();
+            const k2 = document.getElementById('apiKey2').value.trim();
+            const k3 = document.getElementById('apiKey3').value.trim();
+            
+            if(!k1 && !k2 && !k3) {
+                alert("Please enter at least one API Key!");
                 return;
             }
-            state.apiKey = key;
-            localStorage.setItem('gemini_api_key', key);
+            
+            state.apiKeys = [k1, k2, k3];
+            localStorage.setItem('gemini_key_1', k1);
+            localStorage.setItem('gemini_key_2', k2);
+            localStorage.setItem('gemini_key_3', k3);
+            
             document.getElementById('keyMissingDot').classList.add('hidden');
-            alert("API Key Saved Successfully!");
+            alert("API Keys Saved! We will auto-rotate them.");
             toggleSettings();
         }
 
-        function checkApiKey() {
-            if(!state.apiKey) {
-                alert("Please set your Gemini API Key in Settings first!");
+        function getApiKey() {
+            // Return a random non-empty key
+            const available = state.apiKeys.filter(k => k && k.length > 10);
+            if(available.length === 0) {
+                alert("Please set your Gemini API Keys in Settings!");
                 toggleSettings();
-                return false;
+                return null;
             }
-            return true;
+            return available[Math.floor(Math.random() * available.length)];
         }
 
         function setRatio(r) {
             state.ratio = r;
-            
-            // UI Classes
             const activeClass = "cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 border-blue-500 bg-blue-500/10";
             const inactiveClass = "cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 border-gray-700 bg-gray-800";
             
@@ -305,47 +336,29 @@
             btnShort.className = r === '9:16' ? activeClass : inactiveClass;
             btnLong.className = r === '16:9' ? activeClass : inactiveClass;
             
-            // Icon Colors
             const updateIcon = (id, isActive) => {
                 const el = document.querySelector(`#${id} svg`) || document.querySelector(`#${id} i`);
                 if(el) {
-                    if(isActive) {
-                        el.classList.add('text-blue-400');
-                        el.classList.remove('text-gray-400');
-                    } else {
-                        el.classList.add('text-gray-400');
-                        el.classList.remove('text-blue-400');
-                    }
+                    if(isActive) { el.classList.add('text-blue-400'); el.classList.remove('text-gray-400'); }
+                    else { el.classList.add('text-gray-400'); el.classList.remove('text-blue-400'); }
                 }
             };
-
             updateIcon('ratio-9-16', r === '9:16');
             updateIcon('ratio-16-9', r === '16:9');
-
             updateDurationOptions();
         }
 
         function updateDurationOptions() {
             const sel = document.getElementById('durationSelect');
             sel.innerHTML = '';
-            
             if (state.ratio === '9:16') {
-                // Shorts options
-                const opts = [
-                    { l: '10 Seconds', v: '10' },
-                    { l: '20 Seconds', v: '20' },
-                    { l: '30 Seconds', v: '30' },
-                    { l: '60 Seconds (1 Min)', v: '60' }
-                ];
+                const opts = [{ l: '10 Seconds', v: '10' }, { l: '20 Seconds', v: '20' }, { l: '30 Seconds', v: '30' }, { l: '60 Seconds (1 Min)', v: '60' }];
                 opts.forEach(o => sel.add(new Option(o.l, o.v)));
-                state.duration = '30'; // Default short
+                state.duration = '30';
                 sel.value = '30';
             } else {
-                // Long options
-                for(let i=1; i<=30; i++) {
-                    sel.add(new Option(`${i} Minute${i>1?'s':''}`, i*60));
-                }
-                state.duration = '60'; // Default long
+                for(let i=1; i<=30; i++) sel.add(new Option(`${i} Minute${i>1?'s':''}`, i*60));
+                state.duration = '60';
                 sel.value = '60';
             }
         }
@@ -353,15 +366,13 @@
         function goToStep(step) {
             for(let i=1; i<=4; i++) document.getElementById(`view-${i}`).classList.add('hidden');
             document.getElementById(`view-${step}`).classList.remove('hidden');
-            
             for(let i=1; i<=4; i++) {
                 const ind = document.getElementById(`step${i}-ind`);
                 const circle = ind.querySelector('div');
                 if (i <= step) {
                     ind.className = 'step-item flex flex-col items-center text-blue-500';
                     circle.className = 'w-8 h-8 rounded-full flex items-center justify-center border-2 bg-blue-500 border-blue-500 text-white font-bold text-sm';
-                    if (i < step) circle.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
-                    else circle.innerHTML = i;
+                    if (i < step) circle.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`; else circle.innerHTML = i;
                 } else {
                     ind.className = 'step-item flex flex-col items-center text-gray-500';
                     circle.className = 'w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-600 bg-gray-800 font-bold text-sm';
@@ -389,7 +400,9 @@
         // --- Logic ---
 
         async function generateTitles() {
-            if(!checkApiKey()) return;
+            const key = getApiKey();
+            if(!key) return;
+            
             state.topic = document.getElementById('topicInput').value;
             state.duration = document.getElementById('durationSelect').value;
             state.language = document.getElementById('languageSelect').value;
@@ -397,25 +410,22 @@
 
             if(!state.topic) return alert("Please enter a topic");
 
-            showLoader(`Generating ${state.ratio === '9:16' ? 'Shorts' : 'Video'} Titles...`, 10);
+            showLoader(`Generating Titles using API...`, 10);
             
             try {
                 const prompt = `You are a YouTube viral expert. Create 5 short, clickbaity, and viral video titles for the topic: "${state.topic}". 
-                Format: ${state.ratio === '9:16' ? 'YouTube Shorts / TikTok Style' : 'YouTube Long Video Style'}.
-                Language: ${state.language}.
-                Return ONLY the titles separated by a pipe symbol (|). Do not add numbering or extra text.`;
+                Format: ${state.ratio === '9:16' ? 'YouTube Shorts' : 'YouTube Video'}. Language: ${state.language}.
+                Return ONLY the titles separated by a pipe symbol (|). No extra text.`;
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-                
                 const data = await res.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
                 state.titles = text.split('|').map(t => t.trim()).filter(t => t.length > 0);
                 
-                // Render List
                 const list = document.getElementById('titlesList');
                 list.innerHTML = '';
                 state.titles.forEach(t => {
@@ -425,95 +435,75 @@
                     btn.onclick = () => generateScript(t);
                     list.appendChild(btn);
                 });
-
                 hideLoader();
                 goToStep(2);
-
             } catch(e) {
                 console.error(e);
-                alert("Error generating titles. Check your API Key.");
+                alert("Error generating titles. Check API Key/Quota.");
                 hideLoader();
             }
         }
 
         async function generateScript(title) {
-            if(!checkApiKey()) return;
+            const key = getApiKey();
+            if(!key) return;
             state.title = title;
             const words = Math.round((parseInt(state.duration)/60) * 145);
-            
-            showLoader(`Writing Script (~${words} words)...`, 20);
+            showLoader(`Writing Script...`, 20);
 
             try {
-                const prompt = `Create a video script for the title: "${title}". 
-                Target Duration: ${state.duration} seconds.
-                Target Word Count: Approx ${words} words.
-                Aspect Ratio: ${state.ratio} (${state.ratio === '9:16' ? 'Vertical' : 'Horizontal'}).
-                Language: ${state.language}.
-                Divide the script into scenes naturally based on the flow.
-                Return valid JSON array of objects. 
-                Format: [{"text": "Voiceover text here", "image_prompt": "Detailed description, ensure visual fits ${state.ratio} aspect ratio"}]`;
+                const prompt = `Create a video script for title: "${title}". 
+                Duration: ${state.duration}s. Words: ~${words}. Ratio: ${state.ratio}. Lang: ${state.language}.
+                Return valid JSON array: [{"text": "Voiceover", "image_prompt": "Visual description for AI"}]`;
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
                 });
-
                 const data = await res.json();
-                const jsonStr = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                const script = JSON.parse(jsonStr);
-                
+                const script = JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text);
                 state.scriptData = script.map(s => ({...s, imageSrc: null, audioUrl: null, audioDuration: 3000}));
 
-                // Render Preview
-                document.getElementById('scriptInfo').innerHTML = `
-                    <span class="bg-gray-700 px-2 py-0.5 rounded text-gray-200">${state.ratio}</span>
-                    <span class="bg-gray-700 px-2 py-0.5 rounded text-gray-200">${state.duration}s</span>
-                    <span>${state.scriptData.length} Scenes</span>
-                `;
-                
+                document.getElementById('scriptInfo').innerHTML = `<span class="bg-gray-700 px-2 py-0.5 rounded">${state.ratio}</span> <span>${state.scriptData.length} Scenes</span>`;
                 const cont = document.getElementById('scriptContainer');
                 cont.innerHTML = '';
                 state.scriptData.forEach((s, idx) => {
                     cont.innerHTML += `
                         <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="text-xs font-bold text-gray-500 uppercase">Scene ${idx + 1}</span>
-                            </div>
+                            <div class="flex justify-between items-start mb-2"><span class="text-xs font-bold text-gray-500 uppercase">Scene ${idx + 1}</span></div>
                             <p class="text-gray-200 mb-2">${s.text}</p>
-                            <div class="text-xs text-gray-500 italic flex items-center gap-2">
-                                <i data-lucide="image" class="w-3 h-3"></i> ${s.image_prompt}
-                            </div>
-                        </div>
-                    `;
+                            <div class="text-xs text-gray-500 italic flex items-center gap-2"><i data-lucide="image" class="w-3 h-3"></i> ${s.image_prompt}</div>
+                        </div>`;
                 });
                 lucide.createIcons();
-
                 hideLoader();
                 goToStep(3);
-
             } catch(e) {
                 console.error(e);
-                alert("Error generating script");
+                alert("Script Error. Check API Key.");
                 hideLoader();
             }
         }
 
         async function generateAssets() {
-            if(!checkApiKey()) return;
-            showLoader("Generating Assets (Fast Mode)...", 0);
+            const key = getApiKey();
+            if(!key) return;
+            showLoader("Generating Assets (Rotating Keys)...", 0);
             
             const total = state.scriptData.length * 2;
             let done = 0;
             const updateP = () => { done++; updateLoaderPercent((done/total)*100); };
 
             const promises = state.scriptData.map(async (scene, idx) => {
-                // 1. Image
+                // Use different keys randomly for parallel requests to avoid rate limit
+                const reqKey = getApiKey(); 
                 const ratioKey = state.ratio === '9:16' ? "vertical, 9:16, portrait" : "cinematic, 16:9, wide";
-                let imgUrl = `https://placehold.co/${state.ratio==='9:16'?'720x1280':'1280x720'}/222/FFF?text=Scene+${idx+1}`;
+                let imgUrl = `https://placehold.co/${state.ratio==='9:16'?'720x1280':'1280x720'}/333/FFF?text=Scene+${idx+1}`;
                 
+                // 1. Image Gen
                 try {
-                    const imgRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${state.apiKey}`, {
+                    const imgRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${reqKey}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ instances: [{ prompt: `Photorealistic, 8k, ${ratioKey}, ${scene.image_prompt}` }], parameters: { sampleCount: 1 } })
@@ -521,15 +511,17 @@
                     const imgData = await imgRes.json();
                     if(imgData.predictions?.[0]?.bytesBase64Encoded) {
                         imgUrl = `data:image/png;base64,${imgData.predictions[0].bytesBase64Encoded}`;
+                    } else {
+                        console.warn("Image API blocked/failed, using placeholder");
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) { console.error("Image Error", e); }
                 updateP();
 
-                // 2. Audio
+                // 2. Audio Gen
                 let audUrl = null;
                 let audDur = 3000;
                 try {
-                    const audRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${state.apiKey}`, {
+                    const audRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${reqKey}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
@@ -542,90 +534,59 @@
                     if(b64) {
                         audUrl = pcmToWav(b64);
                         const byteLen = (b64.length * 3) / 4; 
-                        audDur = (byteLen / 48000) * 1000 + 500; // +500ms buffer
+                        audDur = (byteLen / 48000) * 1000 + 500; 
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) { console.error("Audio Error", e); }
                 updateP();
 
                 return { ...scene, imageSrc: imgUrl, audioUrl: audUrl, audioDuration: audDur };
             });
 
             state.scriptData = await Promise.all(promises);
-            
-            // Prepare View 4
             setupRenderView();
             hideLoader();
             goToStep(4);
         }
 
         function setupRenderView() {
-            // Setup Canvas Ratio
             const wrap = document.getElementById('canvasWrapper');
             const canvas = document.getElementById('videoCanvas');
-            
             if(state.ratio === '9:16') {
                 wrap.style.aspectRatio = '9/16';
                 wrap.style.maxHeight = '70vh';
                 wrap.style.width = 'auto';
-                canvas.width = 720;
-                canvas.height = 1280;
+                canvas.width = 720; canvas.height = 1280;
             } else {
                 wrap.style.aspectRatio = '16/9';
                 wrap.style.maxHeight = 'auto';
                 wrap.style.width = '100%';
-                canvas.width = 1280;
-                canvas.height = 720;
+                canvas.width = 1280; canvas.height = 720;
             }
-
-            // Render Timeline
             const tl = document.getElementById('timelineContainer');
             tl.innerHTML = `<h3 class="font-bold text-gray-400 text-xs uppercase mb-2">Timeline</h3>`;
-            state.scriptData.forEach((s, i) => {
+            state.scriptData.forEach((s) => {
                 tl.innerHTML += `
-                     <div class="bg-gray-800 p-2 rounded flex gap-3 items-center opacity-70 hover:opacity-100 transition-opacity mb-2">
+                     <div class="bg-gray-800 p-2 rounded flex gap-3 items-center opacity-70 mb-2">
                        <img src="${s.imageSrc}" class="w-12 h-12 object-cover rounded bg-gray-900" />
-                       <div class="min-w-0 flex-1">
-                           <div class="text-xs truncate text-gray-300">${s.text}</div>
-                           <div class="text-[10px] text-gray-500 mt-0.5 flex gap-2">
-                               ${s.audioUrl ? '<span class="text-green-400 flex items-center gap-1"><i data-lucide="music" class="w-3 h-3"></i> Audio OK</span>' : '<span class="text-red-400">No Audio</span>'}
-                           </div>
-                       </div>
-                     </div>
-                `;
+                       <div class="min-w-0 flex-1"><div class="text-xs truncate text-gray-300">${s.text}</div>
+                       <div class="text-[10px] ${s.audioUrl?'text-green-400':'text-red-400'}">${s.audioUrl?'Audio OK':'No Audio'}</div></div>
+                     </div>`;
             });
-            lucide.createIcons();
         }
-
-        // --- Render Logic ---
 
         function pcmToWav(b64) {
             const bin = atob(b64);
             const len = bin.length;
             const bytes = new Uint8Array(len);
             for(let i=0; i<len; i++) bytes[i] = bin.charCodeAt(i);
-            
             const buf = new ArrayBuffer(44 + len);
             const view = new DataView(buf);
-            
             const writeS = (o, s) => { for(let i=0; i<s.length; i++) view.setUint8(o+i, s.charCodeAt(i)); };
-            
-            writeS(0, 'RIFF');
-            view.setUint32(4, 36+len, true);
-            writeS(8, 'WAVE');
-            writeS(12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
-            view.setUint16(22, 1, true);
-            view.setUint32(24, 24000, true); // Rate
-            view.setUint32(28, 48000, true); // ByteRate
-            view.setUint16(32, 2, true);
-            view.setUint16(34, 16, true);
-            writeS(36, 'data');
-            view.setUint32(40, len, true);
-            
-            const wavBytes = new Uint8Array(buf);
-            wavBytes.set(bytes, 44);
-            
+            writeS(0, 'RIFF'); view.setUint32(4, 36+len, true); writeS(8, 'WAVE'); writeS(12, 'fmt ');
+            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+            view.setUint32(24, 24000, true); view.setUint32(28, 48000, true); view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true); writeS(36, 'data'); view.setUint32(40, len, true);
+            const wavBytes = new Uint8Array(buf); wavBytes.set(bytes, 44);
             return URL.createObjectURL(new Blob([buf], {type: 'audio/wav'}));
         }
 
@@ -640,11 +601,11 @@
             loadOverlay.classList.remove('hidden');
             doneState.classList.add('hidden');
 
-            // 1. Setup Contexts
-            const actx = new (window.AudioContext || window.webkitAudioContext)();
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            const actx = new AudioContext();
+            await actx.resume(); // Critical fix for 0 bytes
             const dest = actx.createMediaStreamDestination();
             
-            // Silent Oscillator (Fix)
             const osc = actx.createOscillator();
             const gain = actx.createGain();
             gain.gain.value = 0;
@@ -656,94 +617,69 @@
             const ctx = canvas.getContext('2d');
             const stream = canvas.captureStream(30);
             
-            const combined = new MediaStream([
-                ...stream.getVideoTracks(),
-                ...dest.stream.getAudioTracks()
-            ]);
+            const combined = new MediaStream([...stream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
 
-            // Recorder
             let mime = 'video/webm; codecs=vp9';
-            if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm; codecs=vp8'; // Windows Fix
+            if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm; codecs=vp8';
             if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
 
-            const rec = new MediaRecorder(combined, { mimeType: mime, videoBitsPerSecond: 3000000 });
+            const rec = new MediaRecorder(combined, { mimeType: mime, videoBitsPerSecond: 5000000 });
             const chunks = [];
             
             rec.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
             rec.onstop = () => {
                 const blob = new Blob(chunks, {type: 'video/webm'});
                 const url = URL.createObjectURL(blob);
-                
-                // Stop UI
                 loadOverlay.classList.add('hidden');
                 doneState.classList.remove('hidden');
-                
                 const dlBtn = document.getElementById('downloadLink');
                 dlBtn.href = url;
                 dlBtn.download = `viral_${state.ratio==='9:16'?'short':'video'}_${Date.now()}.webm`;
-                
                 osc.stop();
                 actx.close();
-                dlBtn.click(); // Auto DL
+                dlBtn.click();
             };
 
-            rec.start(500); // 500ms chunking fix
-
-            // 2. Playback Loop
+            // Important: start drawing BEFORE recording
             let currentImg = new Image();
-            // Preload first
             if(state.scriptData.length > 0) {
                 currentImg.src = state.scriptData[0].imageSrc;
                 await new Promise(r => currentImg.onload = r);
             }
+            ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
 
-            // Draw Loop
+            rec.start(500); // Force chunking every 500ms
+
             let isRunning = true;
             let currentSceneIdx = 0;
             
             const draw = () => {
                 if(!isRunning) return;
-                
                 ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
-                
-                // Text Overlay
                 const scene = state.scriptData[currentSceneIdx];
                 if(scene) {
                     const isVert = state.ratio === '9:16';
                     const boxH = isVert ? 220 : 140;
-                    
                     ctx.fillStyle = 'rgba(0,0,0,0.6)';
                     ctx.fillRect(0, canvas.height - boxH, canvas.width, boxH);
-                    
                     ctx.font = isVert ? 'bold 36px Arial' : 'bold 32px Arial';
                     ctx.fillStyle = 'white';
                     ctx.textAlign = 'center';
-                    
-                    // Simple Wrap
                     const words = scene.text.split(' ');
-                    let line = '';
-                    let lines = [];
-                    const maxW = canvas.width - 60;
-                    
+                    let line = ''; let lines = []; const maxW = canvas.width - 60;
                     words.forEach((w, i) => {
                         const test = line + w + ' ';
-                        if(ctx.measureText(test).width > maxW && i > 0) {
-                            lines.push(line);
-                            line = w + ' ';
-                        } else line = test;
+                        if(ctx.measureText(test).width > maxW && i > 0) { lines.push(line); line = w + ' '; } else line = test;
                     });
                     lines.push(line);
-                    
                     const lh = isVert ? 45 : 40;
                     const startY = canvas.height - (boxH/2) - ((lines.length-1)*lh/2) + 15;
                     lines.forEach((l, k) => ctx.fillText(l, canvas.width/2, startY + (k*lh)));
                 }
-
                 requestAnimationFrame(draw);
             };
             draw();
 
-            // Sequencer
             for(let i=0; i<state.scriptData.length; i++) {
                 currentSceneIdx = i;
                 const pct = Math.round((i / state.scriptData.length) * 100);
@@ -751,43 +687,38 @@
                 progressTxt.innerText = `${pct}% Complete`;
                 
                 const s = state.scriptData[i];
-                
-                // Preload Next Image
                 if(i+1 < state.scriptData.length) {
                     const nextImg = new Image();
                     nextImg.crossOrigin = "anonymous";
                     nextImg.src = state.scriptData[i+1].imageSrc;
-                    // Dont await here, just start loading
                 }
-
-                // Update Current Image
                 const img = new Image();
                 img.crossOrigin = "anonymous";
                 img.src = s.imageSrc;
                 await new Promise(r => img.onload = r);
                 currentImg = img;
 
-                // Play Audio
                 if(s.audioUrl) {
-                    const ab = await (await fetch(s.audioUrl)).arrayBuffer();
-                    const audioBuf = await actx.decodeAudioData(ab);
-                    const src = actx.createBufferSource();
-                    src.buffer = audioBuf;
-                    src.connect(dest);
-                    src.start(0);
-                    await new Promise(r => setTimeout(r, (audioBuf.duration * 1000) + 100));
+                    try {
+                        const ab = await (await fetch(s.audioUrl)).arrayBuffer();
+                        const audioBuf = await actx.decodeAudioData(ab);
+                        const src = actx.createBufferSource();
+                        src.buffer = audioBuf;
+                        src.connect(dest);
+                        src.start(0);
+                        await new Promise(r => setTimeout(r, (audioBuf.duration * 1000) + 100));
+                    } catch(e) { await new Promise(r => setTimeout(r, 3000)); }
                 } else {
                     await new Promise(r => setTimeout(r, 3000));
                 }
             }
 
-            // Finish
             progress.style.width = `100%`;
             isRunning = false;
+            // Wait for last chunk
             await new Promise(r => setTimeout(r, 1000));
             rec.stop();
         }
-
     </script>
 </body>
 </html>
