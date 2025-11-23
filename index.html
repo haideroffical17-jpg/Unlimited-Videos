@@ -498,23 +498,25 @@
             const promises = state.scriptData.map(async (scene, idx) => {
                 // Use different keys randomly for parallel requests to avoid rate limit
                 const reqKey = getApiKey(); 
-                const ratioKey = state.ratio === '9:16' ? "vertical, 9:16, portrait" : "cinematic, 16:9, wide";
-                let imgUrl = `https://placehold.co/${state.ratio==='9:16'?'720x1280':'1280x720'}/333/FFF?text=Scene+${idx+1}`;
+                const ratioKey = state.ratio === '9:16' ? "vertical, portrait format, tall cinematic shot" : "wide cinematic landscape shot";
+                // Improved Placeholder with more detail
+                let imgUrl = `https://placehold.co/${state.ratio==='9:16'?'720x1280':'1280x720'}/333/FFF?text=Scene+${idx+1}+%0A(${encodeURIComponent(scene.image_prompt.substring(0, 50))}...)`;
                 
                 // 1. Image Gen
                 try {
                     const imgRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${reqKey}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ instances: [{ prompt: `Photorealistic, 8k, ${ratioKey}, ${scene.image_prompt}` }], parameters: { sampleCount: 1 } })
+                        // Enhanced prompt for better generation
+                        body: JSON.stringify({ instances: [{ prompt: `Cinematic still frame, detailed, 8k, ${ratioKey}, ${scene.image_prompt}` }], parameters: { sampleCount: 1 } })
                     });
                     const imgData = await imgRes.json();
                     if(imgData.predictions?.[0]?.bytesBase64Encoded) {
                         imgUrl = `data:image/png;base64,${imgData.predictions[0].bytesBase64Encoded}`;
                     } else {
-                        console.warn("Image API blocked/failed, using placeholder");
+                        console.warn("Image API blocked/failed, using placeholder. Check console for details.", imgData);
                     }
-                } catch(e) { console.error("Image Error", e); }
+                } catch(e) { console.error("Image Gen Error:", e); }
                 updateP();
 
                 // 2. Audio Gen
