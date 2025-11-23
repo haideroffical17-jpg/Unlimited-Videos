@@ -40,8 +40,9 @@
                     ViralVideo Creator Pro
                 </h1>
             </div>
-            <button onclick="toggleSettings()" class="p-2 hover:bg-gray-800 rounded-full transition-colors">
+            <button onclick="toggleSettings()" class="p-2 hover:bg-gray-800 rounded-full transition-colors relative">
                 <i data-lucide="settings" class="w-5 h-5 text-gray-400"></i>
+                <span id="keyMissingDot" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
             </button>
         </div>
     </header>
@@ -50,11 +51,20 @@
     <main class="max-w-4xl mx-auto p-4 md:p-8 relative">
 
         <!-- Settings Modal (Hidden by default) -->
-        <div id="settingsPanel" class="hidden mb-6 bg-gray-800 rounded-xl p-6 border border-gray-700">
-            <h2 class="text-xl font-bold mb-4">API Configuration</h2>
-            <p class="text-gray-400 mb-4 text-sm">Add your custom keys here if needed (Optional).</p>
-            <input type="password" id="customApiKey" placeholder="sk-proj-..." class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-sm mb-4">
-            <button onclick="toggleSettings()" class="bg-blue-600 text-white px-4 py-2 rounded">Close</button>
+        <div id="settingsPanel" class="hidden mb-6 bg-gray-800 rounded-xl p-6 border border-gray-700 animate-fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="key" class="w-5 h-5 text-yellow-400"></i> API Configuration</h2>
+            </div>
+            <p class="text-gray-400 mb-4 text-sm bg-yellow-500/10 border border-yellow-500/20 p-3 rounded">
+                ⚠️ This tool requires your own <strong>Google Gemini API Key</strong> to work.
+            </p>
+            <label class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Your API Key</label>
+            <input type="password" id="customApiKey" placeholder="Paste your API Key here (starts with AIza...)" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-sm mb-4 focus:border-blue-500 outline-none text-white">
+            <div class="flex justify-end gap-2">
+                <button onclick="saveSettings()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition-colors">
+                    Save Key
+                </button>
+            </div>
         </div>
 
         <!-- Step Indicator -->
@@ -230,8 +240,8 @@
 
     <script>
         // --- State ---
-        const apiKey = ""; // Injected by environment
         let state = {
+            apiKey: localStorage.getItem('gemini_api_key') || '',
             topic: '',
             ratio: '16:9',
             duration: '60',
@@ -245,6 +255,14 @@
         // --- Init ---
         lucide.createIcons();
         updateDurationOptions(); // Init options
+        
+        // Load API Key if exists
+        if(state.apiKey) {
+            document.getElementById('customApiKey').value = state.apiKey;
+        } else {
+            // Show red dot if missing
+            document.getElementById('keyMissingDot').classList.remove('hidden');
+        }
 
         // --- Helper Functions ---
         function toggleSettings() {
@@ -252,17 +270,57 @@
             el.classList.toggle('hidden');
         }
 
+        function saveSettings() {
+            const key = document.getElementById('customApiKey').value.trim();
+            if(!key) {
+                alert("Please enter a valid API Key!");
+                return;
+            }
+            state.apiKey = key;
+            localStorage.setItem('gemini_api_key', key);
+            document.getElementById('keyMissingDot').classList.add('hidden');
+            alert("API Key Saved Successfully!");
+            toggleSettings();
+        }
+
+        function checkApiKey() {
+            if(!state.apiKey) {
+                alert("Please set your Gemini API Key in Settings first!");
+                toggleSettings();
+                return false;
+            }
+            return true;
+        }
+
         function setRatio(r) {
             state.ratio = r;
-            // Update UI
-            document.getElementById('ratio-9-16').className = `cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${r === '9:16' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`;
-            document.getElementById('ratio-16-9').className = `cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${r === '16:9' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`;
+            
+            // UI Classes
+            const activeClass = "cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 border-blue-500 bg-blue-500/10";
+            const inactiveClass = "cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 border-gray-700 bg-gray-800";
+            
+            const btnShort = document.getElementById('ratio-9-16');
+            const btnLong = document.getElementById('ratio-16-9');
+            
+            btnShort.className = r === '9:16' ? activeClass : inactiveClass;
+            btnLong.className = r === '16:9' ? activeClass : inactiveClass;
             
             // Icon Colors
-            document.querySelector('#ratio-9-16 i').classList.toggle('text-blue-400', r === '9:16');
-            document.querySelector('#ratio-9-16 i').classList.toggle('text-gray-400', r !== '9:16');
-            document.querySelector('#ratio-16-9 i').classList.toggle('text-blue-400', r === '16:9');
-            document.querySelector('#ratio-16-9 i').classList.toggle('text-gray-400', r !== '16:9');
+            const updateIcon = (id, isActive) => {
+                const el = document.querySelector(`#${id} svg`) || document.querySelector(`#${id} i`);
+                if(el) {
+                    if(isActive) {
+                        el.classList.add('text-blue-400');
+                        el.classList.remove('text-gray-400');
+                    } else {
+                        el.classList.add('text-gray-400');
+                        el.classList.remove('text-blue-400');
+                    }
+                }
+            };
+
+            updateIcon('ratio-9-16', r === '9:16');
+            updateIcon('ratio-16-9', r === '16:9');
 
             updateDurationOptions();
         }
@@ -277,7 +335,6 @@
                     { l: '10 Seconds', v: '10' },
                     { l: '20 Seconds', v: '20' },
                     { l: '30 Seconds', v: '30' },
-                    { l: '45 Seconds', v: '45' },
                     { l: '60 Seconds (1 Min)', v: '60' }
                 ];
                 opts.forEach(o => sel.add(new Option(o.l, o.v)));
@@ -294,12 +351,9 @@
         }
 
         function goToStep(step) {
-            // Hide all views
             for(let i=1; i<=4; i++) document.getElementById(`view-${i}`).classList.add('hidden');
-            // Show target
             document.getElementById(`view-${step}`).classList.remove('hidden');
             
-            // Update Indicators
             for(let i=1; i<=4; i++) {
                 const ind = document.getElementById(`step${i}-ind`);
                 const circle = ind.querySelector('div');
@@ -335,6 +389,7 @@
         // --- Logic ---
 
         async function generateTitles() {
+            if(!checkApiKey()) return;
             state.topic = document.getElementById('topicInput').value;
             state.duration = document.getElementById('durationSelect').value;
             state.language = document.getElementById('languageSelect').value;
@@ -350,7 +405,7 @@
                 Language: ${state.language}.
                 Return ONLY the titles separated by a pipe symbol (|). Do not add numbering or extra text.`;
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
@@ -376,14 +431,14 @@
 
             } catch(e) {
                 console.error(e);
-                alert("Error generating titles");
+                alert("Error generating titles. Check your API Key.");
                 hideLoader();
             }
         }
 
         async function generateScript(title) {
+            if(!checkApiKey()) return;
             state.title = title;
-            // Approx 145 words per min
             const words = Math.round((parseInt(state.duration)/60) * 145);
             
             showLoader(`Writing Script (~${words} words)...`, 20);
@@ -398,7 +453,7 @@
                 Return valid JSON array of objects. 
                 Format: [{"text": "Voiceover text here", "image_prompt": "Detailed description, ensure visual fits ${state.ratio} aspect ratio"}]`;
 
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
@@ -445,6 +500,7 @@
         }
 
         async function generateAssets() {
+            if(!checkApiKey()) return;
             showLoader("Generating Assets (Fast Mode)...", 0);
             
             const total = state.scriptData.length * 2;
@@ -457,7 +513,7 @@
                 let imgUrl = `https://placehold.co/${state.ratio==='9:16'?'720x1280':'1280x720'}/222/FFF?text=Scene+${idx+1}`;
                 
                 try {
-                    const imgRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
+                    const imgRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${state.apiKey}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ instances: [{ prompt: `Photorealistic, 8k, ${ratioKey}, ${scene.image_prompt}` }], parameters: { sampleCount: 1 } })
@@ -473,7 +529,7 @@
                 let audUrl = null;
                 let audDur = 3000;
                 try {
-                    const audRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                    const audRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${state.apiKey}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({
@@ -485,8 +541,6 @@
                     const b64 = audData.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
                     if(b64) {
                         audUrl = pcmToWav(b64);
-                        // Approx duration: (bytes) / (rate * channels * bitDepth/8)
-                        // PCM 24kHz Mono 16bit = 48000 bytes/sec
                         const byteLen = (b64.length * 3) / 4; 
                         audDur = (byteLen / 48000) * 1000 + 500; // +500ms buffer
                     }
