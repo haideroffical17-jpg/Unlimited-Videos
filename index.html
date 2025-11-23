@@ -3,455 +3,737 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Creator Studio - Bulk Video Generator</title>
-    
-    <!-- Tailwind CSS -->
+    <title>ViralVideo Creator Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        
-        body {
-            background-color: #0f172a; 
-            color: white;
-            font-family: 'Inter', sans-serif;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
         }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-gray-900 text-white font-sans min-h-screen selection:bg-blue-500 selection:text-white">
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        const Icons = {
-            Video: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>,
-            ArrowRight: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
-            Play: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
-            Pause: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>,
-            Download: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
-            Loader2: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>,
-            Home: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-            Trash2: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
-            Type: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>,
-            Layers: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
-            RefreshCw: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
-        };
-
-        function App() {
-            const [currentView, setCurrentView] = useState('home');
-
-            return (
-                <div className="min-h-screen flex flex-col items-center">
-                    {currentView === 'home' && <HomePage onNavigate={setCurrentView} />}
-                    {currentView === 'video' && <VideoGenerator onBack={() => setCurrentView('home')} />}
+    <!-- Header -->
+    <header class="border-b border-gray-800 bg-gray-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 p-2 rounded-lg">
+                    <i data-lucide="video" class="w-5 h-5 text-white"></i>
                 </div>
-            );
-        }
+                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                    ViralVideo Creator Pro
+                </h1>
+            </div>
+            <button onclick="toggleSettings()" class="p-2 hover:bg-gray-800 rounded-full transition-colors">
+                <i data-lucide="settings" class="w-5 h-5 text-gray-400"></i>
+            </button>
+        </div>
+    </header>
 
-        function HomePage({ onNavigate }) {
-            return (
-                <div className="w-full max-w-6xl px-4 py-12 flex flex-col items-center animate-fade-in min-h-screen justify-center">
-                    <div className="bg-slate-800/50 border border-slate-700 rounded-full px-6 py-2 mb-6">
-                        <span className="text-blue-400 text-xs font-bold tracking-widest uppercase">POWERED BY GROW WITH HAIDER</span>
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto p-4 md:p-8 relative">
+
+        <!-- Settings Modal (Hidden by default) -->
+        <div id="settingsPanel" class="hidden mb-6 bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <h2 class="text-xl font-bold mb-4">API Configuration</h2>
+            <p class="text-gray-400 mb-4 text-sm">Add your custom keys here if needed (Optional).</p>
+            <input type="password" id="customApiKey" placeholder="sk-proj-..." class="w-full bg-gray-900 border border-gray-600 rounded-lg p-3 text-sm mb-4">
+            <button onclick="toggleSettings()" class="bg-blue-600 text-white px-4 py-2 rounded">Close</button>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="flex justify-between items-center mb-8 px-4">
+            <div class="step-item flex flex-col items-center text-blue-500" id="step1-ind">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 bg-blue-500 border-blue-500 text-white font-bold text-sm">1</div>
+                <span class="text-xs mt-1">Concept</span>
+            </div>
+            <div class="step-item flex flex-col items-center text-gray-500" id="step2-ind">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-600 bg-gray-800 font-bold text-sm">2</div>
+                <span class="text-xs mt-1">Title</span>
+            </div>
+            <div class="step-item flex flex-col items-center text-gray-500" id="step3-ind">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-600 bg-gray-800 font-bold text-sm">3</div>
+                <span class="text-xs mt-1">Script</span>
+            </div>
+            <div class="step-item flex flex-col items-center text-gray-500" id="step4-ind">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-600 bg-gray-800 font-bold text-sm">4</div>
+                <span class="text-xs mt-1">Render</span>
+            </div>
+        </div>
+
+        <!-- Views Container -->
+        <div id="viewsContainer">
+
+            <!-- View 1: Input -->
+            <div id="view-1" class="bg-gray-800 rounded-xl p-8 text-center border border-gray-700">
+                <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="wand-2" class="w-8 h-8 text-blue-400"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-6">Create Viral Video</h2>
+                
+                <div class="max-w-xl mx-auto space-y-4 text-left">
+                    <!-- Topic -->
+                    <div>
+                        <label class="text-xs text-gray-400 font-bold ml-1 mb-1 block uppercase tracking-wide">Video Topic</label>
+                        <input type="text" id="topicInput" placeholder="e.g. Scariest Places, AI Future..." class="w-full bg-gray-900 border border-gray-600 rounded-lg py-3 px-4 text-white focus:border-blue-500 outline-none">
                     </div>
 
-                    <h1 className="text-5xl md:text-6xl font-extrabold text-center mb-4 tracking-tight">
-                        AI Creator Studio
-                    </h1>
-                    <p className="text-slate-400 text-lg mb-16">Professional Tools Suite</p>
-
-                    <div className="w-full max-w-md">
-                        <div className="group relative bg-slate-800/40 border border-slate-700 rounded-3xl p-8 hover:bg-slate-800/60 transition-all hover:border-blue-500/30 cursor-pointer flex flex-col justify-between shadow-2xl" onClick={() => onNavigate('video')}>
-                            <div>
-                                <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
-                                    <Icons.Video className="w-8 h-8 text-white" />
-                                </div>
-                                <h3 className="text-2xl font-bold mb-3">Bulk Video Generator</h3>
-                                <p className="text-slate-400 mb-6">Create unlimited videos from text. Ultra HD Flux Quality. Direct Download.</p>
-                            </div>
-                            <div className="flex items-center gap-2 text-blue-400 font-semibold group-hover:gap-3 transition-all">
-                                Open Tool <Icons.ArrowRight className="w-4 h-4" />
-                            </div>
+                    <!-- Ratio Selector -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div onclick="setRatio('9:16')" id="ratio-9-16" class="cursor-pointer p-4 rounded-xl border-2 border-gray-700 bg-gray-800 hover:border-gray-600 transition-all flex flex-col items-center gap-2">
+                            <i data-lucide="smartphone" class="w-6 h-6 text-gray-400"></i>
+                            <span class="text-sm font-bold">Shorts (9:16)</span>
+                        </div>
+                        <div onclick="setRatio('16:9')" id="ratio-16-9" class="cursor-pointer p-4 rounded-xl border-2 border-blue-500 bg-blue-500/10 transition-all flex flex-col items-center gap-2">
+                            <i data-lucide="monitor" class="w-6 h-6 text-blue-400"></i>
+                            <span class="text-sm font-bold">Video (16:9)</span>
                         </div>
                     </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- Duration -->
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Duration</label>
+                            <select id="durationSelect" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 text-sm outline-none">
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <!-- Language -->
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Language</label>
+                            <select id="languageSelect" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 text-sm outline-none">
+                                <option value="English">English</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Urdu">Urdu</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="German">German</option>
+                            </select>
+                        </div>
+                        <!-- Voice -->
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Voice</label>
+                            <select id="voiceSelect" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 text-sm outline-none">
+                                <option value="Aoede">Female - Soft</option>
+                                <option value="Kore">Female - Energetic</option>
+                                <option value="Fenrir">Male - Deep</option>
+                                <option value="Charon">Male - Narrator</option>
+                                <option value="Puck">Male - Casual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button onclick="generateTitles()" id="btnGenerateTitles" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg flex justify-center gap-2 items-center mt-4 transition-all hover:scale-[1.02]">
+                        <i data-lucide="wand-2" class="w-5 h-5"></i> Generate Titles
+                    </button>
                 </div>
-            );
-        }
+            </div>
 
-        function VideoGenerator({ onBack }) {
-            const [prompts, setPrompts] = useState('');
-            const [scenes, setScenes] = useState([]); 
-            const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
-            const [isPlaying, setIsPlaying] = useState(false);
-            const [isRendering, setIsRendering] = useState(false); 
-            const [aspectRatio, setAspectRatio] = useState('16:9');
-            const [cameraMove, setCameraMove] = useState('cinematic'); 
-            const [isLoading, setIsLoading] = useState(false);
-            const [showCaptions, setShowCaptions] = useState(false);
-            const [progressText, setProgressText] = useState('');
-            
-            const [clipDuration, setClipDuration] = useState(5); 
-            const [progress, setProgress] = useState(0); 
-            
-            const canvasRef = useRef(null);
-            const mediaRecorderRef = useRef(null);
-            const recordedChunks = useRef([]);
-            const imageCache = useRef({});
-            const requestRef = useRef(null);
+            <!-- View 2: Titles -->
+            <div id="view-2" class="hidden space-y-4">
+                <h2 class="text-xl font-bold">Select Title</h2>
+                <div id="titlesList" class="grid gap-3"></div>
+                <button onclick="goToStep(1)" class="text-sm text-gray-400 hover:text-white mt-2">← Back</button>
+            </div>
 
-            // Preload Images with robust error handling
-            useEffect(() => {
-                scenes.forEach(scene => {
-                    if (!scene.image) return;
-                    const img = new Image();
-                    img.crossOrigin = "anonymous"; 
-                    img.src = scene.image;
-                    imageCache.current[scene.id] = img;
-                });
-            }, [scenes]);
+            <!-- View 3: Script & Assets -->
+            <div id="view-3" class="hidden bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold">Script Preview</h2>
+                        <div id="scriptInfo" class="flex items-center gap-2 text-xs text-gray-400 mt-1"></div>
+                    </div>
+                    <button onclick="generateAssets()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-green-900/50 transition-all hover:scale-105">
+                        <i data-lucide="zap" class="w-4 h-4 text-yellow-300 fill-current"></i> Fast Generate
+                    </button>
+                </div>
+                <div id="scriptContainer" class="space-y-4 max-h-[50vh] overflow-y-auto pr-2"></div>
+            </div>
 
-            // Animation Logic
-            const animateCanvas = () => {
-                const canvas = canvasRef.current;
-                if (!canvas) return;
-                const ctx = canvas.getContext('2d');
-                
-                let width = 1920; let height = 1080;
-                if (aspectRatio === '9:16') { width = 1080; height = 1920; }
-                if (aspectRatio === '1:1') { width = 1080; height = 1080; }
-                
-                if (canvas.width !== width) canvas.width = width;
-                if (canvas.height !== height) canvas.height = height;
+            <!-- View 4: Render -->
+            <div id="view-4" class="hidden grid md:grid-cols-3 gap-6">
+                <!-- Timeline -->
+                <div class="md:col-span-1 space-y-3 max-h-[70vh] overflow-y-auto" id="timelineContainer">
+                    <h3 class="font-bold text-gray-400 text-xs uppercase">Timeline</h3>
+                    <!-- Items injected here -->
+                </div>
 
-                ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, width, height);
-
-                const scene = scenes[currentSceneIndex];
-                if (!scene) return;
-
-                const img = imageCache.current[scene.id];
-                
-                // Robust check to prevent "broken state" error
-                if (!img || !img.complete || img.naturalWidth === 0) {
-                    ctx.fillStyle = '#ffffff'; 
-                    ctx.font = '30px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.fillText("Loading Scene...", width/2, height/2);
-                    return; 
-                }
-
-                const p = progress / 100;
-                let scale = 1; let tx = 0; let ty = 0;
-
-                switch (scene.movement) {
-                    case 'zoomIn': scale = 1 + (p * 0.3); break;
-                    case 'panLeft': scale = 1.2; tx = (width * 0.05) - (p * width * 0.1); break;
-                    case 'shake': scale = 1.1; const s = Math.sin(p * 40) * 15; tx = s; ty = s; break;
-                    case 'cinematic': default: scale = 1 + (p * 0.15); tx = -(p * width * 0.02); ty = -(p * height * 0.02); break;
-                }
-
-                ctx.save();
-                ctx.translate(width / 2, height / 2);
-                ctx.scale(scale, scale);
-                ctx.translate(-width / 2 + tx, -height / 2 + ty);
-                
-                const imgRatio = img.width / img.height;
-                const canvasRatio = width / height;
-                let renderW, renderH;
-                
-                if (canvasRatio > imgRatio) { renderW = width; renderH = width / imgRatio; } 
-                else { renderH = height; renderW = height * imgRatio; }
-                
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = 'high';
-                
-                try {
-                    ctx.drawImage(img, (width - renderW) / 2, (height - renderH) / 2, renderW, renderH);
-                } catch (e) {
-                    // Fallback if drawImage fails
-                    console.error("Canvas Draw Error", e);
-                }
-                ctx.restore();
-
-                if (showCaptions) {
-                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                    ctx.fillRect(0, height - 160, width, 160);
-                    ctx.fillStyle = 'white';
-                    ctx.font = 'bold 48px Inter';
-                    ctx.textAlign = 'center';
-                    ctx.shadowColor = "black";
-                    ctx.shadowBlur = 20;
-                    ctx.fillText(scene.text, width/2, height - 70);
-                }
-            };
-
-            useEffect(() => {
-                const loop = () => { animateCanvas(); requestRef.current = requestAnimationFrame(loop); };
-                requestRef.current = requestAnimationFrame(loop);
-                return () => cancelAnimationFrame(requestRef.current);
-            }, [currentSceneIndex, progress, scenes, showCaptions, aspectRatio]);
-
-            useEffect(() => {
-                let interval;
-                if ((isPlaying || isRendering) && scenes.length > 0) {
-                    const fps = 60; const stepTime = 1000 / fps; const totalSteps = (clipDuration * 1000) / stepTime;
-                    interval = setInterval(() => {
-                        setProgress((old) => {
-                            const newProgress = old + (100 / totalSteps);
-                            if (newProgress >= 100) {
-                                if (currentSceneIndex < scenes.length - 1) {
-                                    setCurrentSceneIndex(prev => prev + 1);
-                                    return 0; 
-                                } else {
-                                    if (isRendering) stopRendering();
-                                    setIsPlaying(false); 
-                                    return 100;
-                                }
-                            }
-                            return newProgress;
-                        });
-                    }, stepTime);
-                }
-                return () => clearInterval(interval);
-            }, [isPlaying, isRendering, currentSceneIndex, scenes.length, clipDuration]);
-
-            // --- ROBUST IMAGE GENERATION ---
-            const generateImageWithRetry = async (prompt, seed, retries = 3) => {
-                let width, height;
-                if (aspectRatio === '9:16') { width = 1080; height = 1920; } 
-                else if (aspectRatio === '1:1') { width = 1280; height = 1280; } 
-                else { width = 1920; height = 1080; }
-                
-                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=flux&seed=${seed}&nologo=true`;
-                
-                for (let attempt = 0; attempt < retries; attempt++) {
-                    try {
-                        const response = await fetch(url);
-                        if (!response.ok) throw new Error(`Server error: ${response.status}`);
-                        const blob = await response.blob();
-                        if (blob.size < 1000) throw new Error("Invalid image data"); // Pollinations sometimes returns small error JSONs as blobs
-                        return URL.createObjectURL(blob);
-                    } catch (error) {
-                        console.log(`Attempt ${attempt + 1} failed. Retrying...`);
-                        if (attempt === retries - 1) throw error;
-                        await new Promise(res => setTimeout(res, 2000)); // Wait 2s before retry
-                    }
-                }
-            };
-
-            // --- SEQUENTIAL GENERATION (Safest for Free API) ---
-            const handleGenerate = async () => {
-                setIsLoading(true);
-                setIsPlaying(false);
-                const lines = prompts.split('\n').filter(line => line.trim() !== '');
-                if (lines.length === 0) return;
-
-                // Clear old if needed, or append. Let's append.
-                setProgressText('Initializing...');
-
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-                    setProgressText(`Generating Scene ${i + 1}/${lines.length}...`);
-                    
-                    try {
-                        const seed = Math.floor(Math.random() * 1000000);
-                        const enhancedPrompt = line + ", hyper-realistic photography, 8k resolution, cinematic lighting, photorealistic, unreal engine 5 render";
+                <!-- Canvas -->
+                <div class="md:col-span-2 space-y-4">
+                    <div id="canvasWrapper" class="bg-black rounded-xl overflow-hidden relative border border-gray-800 shadow-2xl flex items-center justify-center mx-auto">
+                        <canvas id="videoCanvas" class="w-full h-full object-contain"></canvas>
                         
-                        // Wait a bit between requests to be nice to the server
-                        if (i > 0) await new Promise(res => setTimeout(res, 1500));
-
-                        const imageUrl = await generateImageWithRetry(enhancedPrompt, seed);
-                        
-                        setScenes(prev => [...prev, {
-                            image: imageUrl,
-                            text: line,
-                            id: Date.now() + i,
-                            movement: cameraMove,
-                            isError: false
-                        }]);
-                    } catch (e) {
-                        console.error(e);
-                        setScenes(prev => [...prev, { 
-                            image: null, 
-                            text: line, 
-                            id: Date.now() + i, 
-                            isError: true 
-                        }]);
-                    }
-                }
-
-                setPrompts('');
-                if (scenes.length === 0) setCurrentSceneIndex(0);
-                setIsLoading(false);
-                setProgressText('');
-            };
-
-            const togglePlay = () => {
-                if (currentSceneIndex === scenes.length - 1 && progress >= 99) { setCurrentSceneIndex(0); setProgress(0); }
-                setIsPlaying(!isPlaying);
-            };
-
-            const startRendering = () => {
-                if (scenes.length === 0) return;
-                setCurrentSceneIndex(0); setProgress(0); setIsRendering(true); setIsPlaying(false); 
-                const stream = canvasRef.current.captureStream(60); 
-                const options = { mimeType: 'video/webm; codecs=vp9', videoBitsPerSecond: 8000000 }; 
-                try { mediaRecorderRef.current = new MediaRecorder(stream, options); } catch (e) { mediaRecorderRef.current = new MediaRecorder(stream); }
-                recordedChunks.current = [];
-                mediaRecorderRef.current.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.current.push(e.data); };
-                mediaRecorderRef.current.onstop = () => {
-                    const blob = new Blob(recordedChunks.current, { type: 'video/webm' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url; a.download = `UltraHD_Video_${Date.now()}.webm`; 
-                    a.click(); window.URL.revokeObjectURL(url);
-                    setIsRendering(false);
-                };
-                mediaRecorderRef.current.start();
-            };
-
-            const stopRendering = () => mediaRecorderRef.current?.stop();
-
-            return (
-                <div className="w-full min-h-screen flex flex-col bg-[#0f172a]">
-                    <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-md sticky top-0 z-20">
-                        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                            <div className="flex items-center gap-3 cursor-pointer" onClick={onBack}>
-                                <button className="p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors"><Icons.Home className="w-5 h-5"/></button>
-                                <div className="h-6 w-[1px] bg-slate-600 mx-1"></div>
-                                <div className="bg-blue-600 p-1.5 rounded-lg"><Icons.Video className="w-5 h-5 text-white" /></div>
-                                <h1 className="text-lg font-bold text-white">Bulk Video Generator</h1>
-                            </div>
-                            <button onClick={startRendering} disabled={scenes.length === 0 || isRendering} className={`flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold tracking-wide transition-all ${isRendering ? 'bg-slate-700 text-slate-400' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20'}`}>
-                                {isRendering ? <><Icons.Loader2 className="w-3 h-3 animate-spin" /> Processing...</> : <><Icons.Download className="w-4 h-4" /> Download 4K</>}
+                        <!-- Overlay: Start Render -->
+                        <div id="startRenderOverlay" class="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                            <button onclick="renderVideo()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold flex items-center gap-3 transform hover:scale-105 transition-all shadow-xl border border-blue-400/30">
+                                <i data-lucide="layers" class="w-6 h-6"></i> Render Video
                             </button>
                         </div>
-                    </header>
 
-                    <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        <div className="lg:col-span-4 space-y-6 h-[calc(100vh-100px)] overflow-y-auto custom-scrollbar pr-2">
-                            <div className="glass-card rounded-2xl p-5">
-                                <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex justify-between">
-                                    <span>Enter Prompts (1 Line = 1 Clip)</span>
-                                    <span className="text-blue-400">Free & Unlimited</span>
-                                </label>
-                                <textarea value={prompts} onChange={(e) => setPrompts(e.target.value)} placeholder="A futuristic car driving in rain&#10;Close up of a robotic eye" className="w-full bg-slate-900/80 border border-slate-600 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none min-h-[180px] text-slate-200 placeholder:text-slate-600 resize-none" />
-                                <div className="grid grid-cols-2 gap-3 mt-4">
-                                    <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Aspect Ratio</label>
-                                        <select value={aspectRatio} onChange={(e) => setAspectRatio(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none">
-                                            <option value="16:9">16:9 (YouTube)</option><option value="9:16">9:16 (Reels)</option><option value="1:1">1:1 (Post)</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Motion Style</label>
-                                        <select value={cameraMove} onChange={(e) => setCameraMove(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-xs text-slate-300 outline-none">
-                                            <option value="cinematic">Cinematic</option><option value="zoomIn">Zoom In</option><option value="panLeft">Pan Left</option><option value="shake">Action Shake</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <button onClick={handleGenerate} disabled={isLoading || !prompts.trim()} className={`w-full mt-5 py-3 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${isLoading ? 'bg-slate-700 text-slate-400' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white'}`}>
-                                    {isLoading ? <><Icons.Loader2 className="w-4 h-4 animate-spin"/> <span className="text-xs">{progressText || "Generating..."}</span></> : "Generate Scenes"}
-                                </button>
+                        <!-- Overlay: Rendering Progress -->
+                        <div id="renderingOverlay" class="hidden absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-20">
+                            <div class="loader mb-4 border-t-blue-500"></div>
+                            <h2 class="text-2xl font-bold text-white mb-2">Rendering Video...</h2>
+                            <p class="text-gray-400 mb-6">Combining Scenes & Voice...</p>
+                            <div class="w-64 h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div id="renderProgressBar" class="h-full bg-blue-500 transition-all duration-300" style="width: 0%"></div>
                             </div>
-                            
-                            {/* VERTICAL LIST (Left) */}
-                            {scenes.length > 0 && (
-                                <div className="glass-card rounded-2xl p-4">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <h3 className="text-xs font-bold text-slate-400 uppercase">Timeline ({scenes.length})</h3>
-                                        <button onClick={() => setScenes([])} className="p-1.5 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"><Icons.Trash2 className="w-4 h-4"/></button>
-                                    </div>
-                                    <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                                        {scenes.map((scene, idx) => (
-                                            <div key={scene.id} onClick={() => { setCurrentSceneIndex(idx); setIsPlaying(false); setProgress(0); }} className={`flex items-center gap-3 p-2 rounded-xl cursor-pointer border transition-all ${currentSceneIndex === idx ? 'bg-blue-600/20 border-blue-500' : 'bg-slate-800 border-transparent hover:bg-slate-700'}`}>
-                                                <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-mono text-slate-300">{idx+1}</div>
-                                                {scene.isError ? 
-                                                    <div className="flex flex-1 items-center justify-between">
-                                                        <span className="text-xs text-red-400 flex-1">Failed (Click to Retry)</span>
-                                                        <button onClick={(e) => { e.stopPropagation(); /* Implement single retry here if needed */ }} className="p-1 text-slate-400 hover:text-white"><Icons.RefreshCw className="w-3 h-3"/></button>
-                                                    </div>
-                                                : <span className="text-xs text-slate-300 flex-1 truncate">{scene.text}</span>}
-                                                {scene.image && <img src={scene.image} className="w-10 h-10 rounded-lg object-cover bg-slate-900"/>}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            <p id="renderProgressText" class="mt-2 text-sm text-blue-400 font-mono">0% Complete</p>
                         </div>
-
-                        <div className="lg:col-span-8 h-full flex flex-col">
-                            <div className="flex-1 bg-black border border-slate-700 rounded-2xl relative overflow-hidden flex items-center justify-center shadow-2xl">
-                                <canvas ref={canvasRef} className="shadow-2xl" style={{ maxHeight: '100%', maxWidth: '100%', aspectRatio: aspectRatio === '16:9' ? '16/9' : aspectRatio === '9:16' ? '9/16' : '1/1' }} />
-                                {isRendering && (
-                                    <div className="absolute inset-0 bg-slate-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
-                                        <Icons.Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-                                        <h2 className="text-xl font-bold text-white">Rendering Video...</h2>
-                                        <p className="text-slate-400 text-sm mt-2">Clip {currentSceneIndex + 1} / {scenes.length}</p>
-                                    </div>
-                                )}
-                                {scenes.length === 0 && !isLoading && (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600">
-                                        <div className="w-20 h-20 rounded-3xl bg-slate-800/50 flex items-center justify-center mb-4 border border-slate-700"><Icons.Video className="w-10 h-10 opacity-50" /></div>
-                                        <p className="text-lg font-medium">Ready to Create</p>
-                                        <p className="text-sm opacity-60">Enter prompts to start</p>
-                                    </div>
-                                )}
-                                {!isRendering && scenes.length > 0 && (
-                                    <div className="absolute bottom-0 w-full p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex justify-center gap-6 opacity-0 hover:opacity-100 transition-opacity">
-                                        <button onClick={togglePlay} className="w-14 h-14 bg-white rounded-full flex items-center justify-center text-black hover:scale-105 transition-transform shadow-lg shadow-white/20">
-                                            {isPlaying ? <Icons.Pause className="w-6 h-6 fill-current"/> : <Icons.Play className="w-6 h-6 fill-current ml-1"/>}
-                                        </button>
-                                        <div className="absolute right-6 bottom-8">
-                                            <button onClick={() => setShowCaptions(!showCaptions)} className={`p-2 rounded-lg border ${showCaptions ? 'bg-white text-black' : 'bg-black/50 text-white border-white/20'}`} title="Toggle Captions"><Icons.Type className="w-5 h-5"/></button>
-                                        </div>
-                                    </div>
-                                )}
+                    </div>
+                    
+                    <!-- Done State -->
+                    <div id="doneState" class="hidden space-y-4 animate-fade-in max-w-lg mx-auto">
+                        <div class="bg-green-900/20 border border-green-500/30 p-4 rounded-xl flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-green-400">Video Ready!</h3>
+                                <p class="text-xs text-gray-400">File saved successfully.</p>
                             </div>
-
-                            {/* HORIZONTAL TIMELINE STRIP (Bottom of Right Panel) */}
-                            {scenes.length > 0 && (
-                                <div className="h-28 mt-4 relative">
-                                    <div className="absolute inset-0 glass-card rounded-2xl overflow-hidden flex items-center px-4">
-                                        <div className="flex gap-3 overflow-x-auto custom-scrollbar w-full pb-2 pt-2">
-                                            {scenes.map((scene, idx) => (
-                                                <div key={scene.id} onClick={() => { setCurrentSceneIndex(idx); setIsPlaying(false); setProgress(0); }} className={`relative h-20 min-w-[120px] rounded-xl overflow-hidden cursor-pointer border-2 transition-all flex-shrink-0 ${currentSceneIndex === idx ? 'border-blue-500 opacity-100 shadow-lg shadow-blue-500/20 scale-105 z-10' : 'border-slate-700 opacity-50 hover:opacity-80'}`}>
-                                                    {scene.image && <img src={scene.image} className="w-full h-full object-cover" />}
-                                                    <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-[10px] px-2 py-1 truncate text-slate-300 font-medium backdrop-blur-sm">{idx+1}. {scene.text}</div>
-                                                    {currentSceneIndex === idx && !isRendering && <div className="absolute bottom-0 left-0 top-0 bg-blue-500/30 border-r-2 border-blue-500 transition-all duration-75 z-20" style={{ width: `${progress}%` }}></div>}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                            <a id="downloadLink" href="#" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2">
+                                <i data-lucide="download" class="w-4 h-4"></i> Download
+                            </a>
                         </div>
-
-                    </main>
+                    </div>
                 </div>
-            );
+            </div>
+
+        </div>
+
+        <!-- Global Loading Overlay -->
+        <div id="globalLoader" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div class="bg-gray-800 p-8 rounded-2xl border border-gray-700 text-center max-w-sm w-full mx-4">
+                <div class="loader mx-auto mb-4 border-t-blue-500 w-10 h-10 border-4"></div>
+                <h3 id="loadingText" class="text-lg font-bold">Processing...</h3>
+                <div class="w-full bg-gray-700 rounded-full h-2 mt-4 overflow-hidden">
+                    <div id="globalProgressBar" class="bg-blue-500 h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="loadingPercent" class="text-xs text-gray-400 mt-2">0%</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- State ---
+        const apiKey = ""; // Injected by environment
+        let state = {
+            topic: '',
+            ratio: '16:9',
+            duration: '60',
+            language: 'English',
+            voice: 'Aoede',
+            titles: [],
+            scriptData: [],
+            title: ''
+        };
+
+        // --- Init ---
+        lucide.createIcons();
+        updateDurationOptions(); // Init options
+
+        // --- Helper Functions ---
+        function toggleSettings() {
+            const el = document.getElementById('settingsPanel');
+            el.classList.toggle('hidden');
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function setRatio(r) {
+            state.ratio = r;
+            // Update UI
+            document.getElementById('ratio-9-16').className = `cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${r === '9:16' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`;
+            document.getElementById('ratio-16-9').className = `cursor-pointer p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${r === '16:9' ? 'border-blue-500 bg-blue-500/10' : 'border-gray-700 bg-gray-800'}`;
+            
+            // Icon Colors
+            document.querySelector('#ratio-9-16 i').classList.toggle('text-blue-400', r === '9:16');
+            document.querySelector('#ratio-9-16 i').classList.toggle('text-gray-400', r !== '9:16');
+            document.querySelector('#ratio-16-9 i').classList.toggle('text-blue-400', r === '16:9');
+            document.querySelector('#ratio-16-9 i').classList.toggle('text-gray-400', r !== '16:9');
+
+            updateDurationOptions();
+        }
+
+        function updateDurationOptions() {
+            const sel = document.getElementById('durationSelect');
+            sel.innerHTML = '';
+            
+            if (state.ratio === '9:16') {
+                // Shorts options
+                const opts = [
+                    { l: '10 Seconds', v: '10' },
+                    { l: '20 Seconds', v: '20' },
+                    { l: '30 Seconds', v: '30' },
+                    { l: '45 Seconds', v: '45' },
+                    { l: '60 Seconds (1 Min)', v: '60' }
+                ];
+                opts.forEach(o => sel.add(new Option(o.l, o.v)));
+                state.duration = '30'; // Default short
+                sel.value = '30';
+            } else {
+                // Long options
+                for(let i=1; i<=30; i++) {
+                    sel.add(new Option(`${i} Minute${i>1?'s':''}`, i*60));
+                }
+                state.duration = '60'; // Default long
+                sel.value = '60';
+            }
+        }
+
+        function goToStep(step) {
+            // Hide all views
+            for(let i=1; i<=4; i++) document.getElementById(`view-${i}`).classList.add('hidden');
+            // Show target
+            document.getElementById(`view-${step}`).classList.remove('hidden');
+            
+            // Update Indicators
+            for(let i=1; i<=4; i++) {
+                const ind = document.getElementById(`step${i}-ind`);
+                const circle = ind.querySelector('div');
+                if (i <= step) {
+                    ind.className = 'step-item flex flex-col items-center text-blue-500';
+                    circle.className = 'w-8 h-8 rounded-full flex items-center justify-center border-2 bg-blue-500 border-blue-500 text-white font-bold text-sm';
+                    if (i < step) circle.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
+                    else circle.innerHTML = i;
+                } else {
+                    ind.className = 'step-item flex flex-col items-center text-gray-500';
+                    circle.className = 'w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-600 bg-gray-800 font-bold text-sm';
+                    circle.innerHTML = i;
+                }
+            }
+            lucide.createIcons();
+        }
+
+        function showLoader(msg, percent = 0) {
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('loadingText').innerText = msg;
+            updateLoaderPercent(percent);
+        }
+
+        function updateLoaderPercent(p) {
+            document.getElementById('globalProgressBar').style.width = `${p}%`;
+            document.getElementById('loadingPercent').innerText = `${Math.round(p)}%`;
+        }
+
+        function hideLoader() {
+            document.getElementById('globalLoader').classList.add('hidden');
+        }
+
+        // --- Logic ---
+
+        async function generateTitles() {
+            state.topic = document.getElementById('topicInput').value;
+            state.duration = document.getElementById('durationSelect').value;
+            state.language = document.getElementById('languageSelect').value;
+            state.voice = document.getElementById('voiceSelect').value;
+
+            if(!state.topic) return alert("Please enter a topic");
+
+            showLoader(`Generating ${state.ratio === '9:16' ? 'Shorts' : 'Video'} Titles...`, 10);
+            
+            try {
+                const prompt = `You are a YouTube viral expert. Create 5 short, clickbaity, and viral video titles for the topic: "${state.topic}". 
+                Format: ${state.ratio === '9:16' ? 'YouTube Shorts / TikTok Style' : 'YouTube Long Video Style'}.
+                Language: ${state.language}.
+                Return ONLY the titles separated by a pipe symbol (|). Do not add numbering or extra text.`;
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                state.titles = text.split('|').map(t => t.trim()).filter(t => t.length > 0);
+                
+                // Render List
+                const list = document.getElementById('titlesList');
+                list.innerHTML = '';
+                state.titles.forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.className = "text-left bg-gray-800 p-4 rounded-xl hover:border-blue-500 border border-gray-700 transition-colors w-full font-medium";
+                    btn.innerText = t;
+                    btn.onclick = () => generateScript(t);
+                    list.appendChild(btn);
+                });
+
+                hideLoader();
+                goToStep(2);
+
+            } catch(e) {
+                console.error(e);
+                alert("Error generating titles");
+                hideLoader();
+            }
+        }
+
+        async function generateScript(title) {
+            state.title = title;
+            // Approx 145 words per min
+            const words = Math.round((parseInt(state.duration)/60) * 145);
+            
+            showLoader(`Writing Script (~${words} words)...`, 20);
+
+            try {
+                const prompt = `Create a video script for the title: "${title}". 
+                Target Duration: ${state.duration} seconds.
+                Target Word Count: Approx ${words} words.
+                Aspect Ratio: ${state.ratio} (${state.ratio === '9:16' ? 'Vertical' : 'Horizontal'}).
+                Language: ${state.language}.
+                Divide the script into scenes naturally based on the flow.
+                Return valid JSON array of objects. 
+                Format: [{"text": "Voiceover text here", "image_prompt": "Detailed description, ensure visual fits ${state.ratio} aspect ratio"}]`;
+
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
+                });
+
+                const data = await res.json();
+                const jsonStr = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                const script = JSON.parse(jsonStr);
+                
+                state.scriptData = script.map(s => ({...s, imageSrc: null, audioUrl: null, audioDuration: 3000}));
+
+                // Render Preview
+                document.getElementById('scriptInfo').innerHTML = `
+                    <span class="bg-gray-700 px-2 py-0.5 rounded text-gray-200">${state.ratio}</span>
+                    <span class="bg-gray-700 px-2 py-0.5 rounded text-gray-200">${state.duration}s</span>
+                    <span>${state.scriptData.length} Scenes</span>
+                `;
+                
+                const cont = document.getElementById('scriptContainer');
+                cont.innerHTML = '';
+                state.scriptData.forEach((s, idx) => {
+                    cont.innerHTML += `
+                        <div class="bg-gray-900/50 p-4 rounded-lg border border-gray-700">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs font-bold text-gray-500 uppercase">Scene ${idx + 1}</span>
+                            </div>
+                            <p class="text-gray-200 mb-2">${s.text}</p>
+                            <div class="text-xs text-gray-500 italic flex items-center gap-2">
+                                <i data-lucide="image" class="w-3 h-3"></i> ${s.image_prompt}
+                            </div>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+
+                hideLoader();
+                goToStep(3);
+
+            } catch(e) {
+                console.error(e);
+                alert("Error generating script");
+                hideLoader();
+            }
+        }
+
+        async function generateAssets() {
+            showLoader("Generating Assets (Fast Mode)...", 0);
+            
+            const total = state.scriptData.length * 2;
+            let done = 0;
+            const updateP = () => { done++; updateLoaderPercent((done/total)*100); };
+
+            const promises = state.scriptData.map(async (scene, idx) => {
+                // 1. Image
+                const ratioKey = state.ratio === '9:16' ? "vertical, 9:16, portrait" : "cinematic, 16:9, wide";
+                let imgUrl = `https://placehold.co/${state.ratio==='9:16'?'720x1280':'1280x720'}/222/FFF?text=Scene+${idx+1}`;
+                
+                try {
+                    const imgRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ instances: [{ prompt: `Photorealistic, 8k, ${ratioKey}, ${scene.image_prompt}` }], parameters: { sampleCount: 1 } })
+                    });
+                    const imgData = await imgRes.json();
+                    if(imgData.predictions?.[0]?.bytesBase64Encoded) {
+                        imgUrl = `data:image/png;base64,${imgData.predictions[0].bytesBase64Encoded}`;
+                    }
+                } catch(e) { console.error(e); }
+                updateP();
+
+                // 2. Audio
+                let audUrl = null;
+                let audDur = 3000;
+                try {
+                    const audRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: scene.text }] }],
+                            generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: state.voice } } } }
+                        })
+                    });
+                    const audData = await audRes.json();
+                    const b64 = audData.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+                    if(b64) {
+                        audUrl = pcmToWav(b64);
+                        // Approx duration: (bytes) / (rate * channels * bitDepth/8)
+                        // PCM 24kHz Mono 16bit = 48000 bytes/sec
+                        const byteLen = (b64.length * 3) / 4; 
+                        audDur = (byteLen / 48000) * 1000 + 500; // +500ms buffer
+                    }
+                } catch(e) { console.error(e); }
+                updateP();
+
+                return { ...scene, imageSrc: imgUrl, audioUrl: audUrl, audioDuration: audDur };
+            });
+
+            state.scriptData = await Promise.all(promises);
+            
+            // Prepare View 4
+            setupRenderView();
+            hideLoader();
+            goToStep(4);
+        }
+
+        function setupRenderView() {
+            // Setup Canvas Ratio
+            const wrap = document.getElementById('canvasWrapper');
+            const canvas = document.getElementById('videoCanvas');
+            
+            if(state.ratio === '9:16') {
+                wrap.style.aspectRatio = '9/16';
+                wrap.style.maxHeight = '70vh';
+                wrap.style.width = 'auto';
+                canvas.width = 720;
+                canvas.height = 1280;
+            } else {
+                wrap.style.aspectRatio = '16/9';
+                wrap.style.maxHeight = 'auto';
+                wrap.style.width = '100%';
+                canvas.width = 1280;
+                canvas.height = 720;
+            }
+
+            // Render Timeline
+            const tl = document.getElementById('timelineContainer');
+            tl.innerHTML = `<h3 class="font-bold text-gray-400 text-xs uppercase mb-2">Timeline</h3>`;
+            state.scriptData.forEach((s, i) => {
+                tl.innerHTML += `
+                     <div class="bg-gray-800 p-2 rounded flex gap-3 items-center opacity-70 hover:opacity-100 transition-opacity mb-2">
+                       <img src="${s.imageSrc}" class="w-12 h-12 object-cover rounded bg-gray-900" />
+                       <div class="min-w-0 flex-1">
+                           <div class="text-xs truncate text-gray-300">${s.text}</div>
+                           <div class="text-[10px] text-gray-500 mt-0.5 flex gap-2">
+                               ${s.audioUrl ? '<span class="text-green-400 flex items-center gap-1"><i data-lucide="music" class="w-3 h-3"></i> Audio OK</span>' : '<span class="text-red-400">No Audio</span>'}
+                           </div>
+                       </div>
+                     </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        // --- Render Logic ---
+
+        function pcmToWav(b64) {
+            const bin = atob(b64);
+            const len = bin.length;
+            const bytes = new Uint8Array(len);
+            for(let i=0; i<len; i++) bytes[i] = bin.charCodeAt(i);
+            
+            const buf = new ArrayBuffer(44 + len);
+            const view = new DataView(buf);
+            
+            const writeS = (o, s) => { for(let i=0; i<s.length; i++) view.setUint8(o+i, s.charCodeAt(i)); };
+            
+            writeS(0, 'RIFF');
+            view.setUint32(4, 36+len, true);
+            writeS(8, 'WAVE');
+            writeS(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, 1, true);
+            view.setUint32(24, 24000, true); // Rate
+            view.setUint32(28, 48000, true); // ByteRate
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeS(36, 'data');
+            view.setUint32(40, len, true);
+            
+            const wavBytes = new Uint8Array(buf);
+            wavBytes.set(bytes, 44);
+            
+            return URL.createObjectURL(new Blob([buf], {type: 'audio/wav'}));
+        }
+
+        async function renderVideo() {
+            const btnOverlay = document.getElementById('startRenderOverlay');
+            const loadOverlay = document.getElementById('renderingOverlay');
+            const progress = document.getElementById('renderProgressBar');
+            const progressTxt = document.getElementById('renderProgressText');
+            const doneState = document.getElementById('doneState');
+            
+            btnOverlay.classList.add('hidden');
+            loadOverlay.classList.remove('hidden');
+            doneState.classList.add('hidden');
+
+            // 1. Setup Contexts
+            const actx = new (window.AudioContext || window.webkitAudioContext)();
+            const dest = actx.createMediaStreamDestination();
+            
+            // Silent Oscillator (Fix)
+            const osc = actx.createOscillator();
+            const gain = actx.createGain();
+            gain.gain.value = 0;
+            osc.connect(gain);
+            gain.connect(dest);
+            osc.start();
+
+            const canvas = document.getElementById('videoCanvas');
+            const ctx = canvas.getContext('2d');
+            const stream = canvas.captureStream(30);
+            
+            const combined = new MediaStream([
+                ...stream.getVideoTracks(),
+                ...dest.stream.getAudioTracks()
+            ]);
+
+            // Recorder
+            let mime = 'video/webm; codecs=vp9';
+            if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm; codecs=vp8'; // Windows Fix
+            if(!MediaRecorder.isTypeSupported(mime)) mime = 'video/webm';
+
+            const rec = new MediaRecorder(combined, { mimeType: mime, videoBitsPerSecond: 3000000 });
+            const chunks = [];
+            
+            rec.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+            rec.onstop = () => {
+                const blob = new Blob(chunks, {type: 'video/webm'});
+                const url = URL.createObjectURL(blob);
+                
+                // Stop UI
+                loadOverlay.classList.add('hidden');
+                doneState.classList.remove('hidden');
+                
+                const dlBtn = document.getElementById('downloadLink');
+                dlBtn.href = url;
+                dlBtn.download = `viral_${state.ratio==='9:16'?'short':'video'}_${Date.now()}.webm`;
+                
+                osc.stop();
+                actx.close();
+                dlBtn.click(); // Auto DL
+            };
+
+            rec.start(500); // 500ms chunking fix
+
+            // 2. Playback Loop
+            let currentImg = new Image();
+            // Preload first
+            if(state.scriptData.length > 0) {
+                currentImg.src = state.scriptData[0].imageSrc;
+                await new Promise(r => currentImg.onload = r);
+            }
+
+            // Draw Loop
+            let isRunning = true;
+            let currentSceneIdx = 0;
+            
+            const draw = () => {
+                if(!isRunning) return;
+                
+                ctx.drawImage(currentImg, 0, 0, canvas.width, canvas.height);
+                
+                // Text Overlay
+                const scene = state.scriptData[currentSceneIdx];
+                if(scene) {
+                    const isVert = state.ratio === '9:16';
+                    const boxH = isVert ? 220 : 140;
+                    
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillRect(0, canvas.height - boxH, canvas.width, boxH);
+                    
+                    ctx.font = isVert ? 'bold 36px Arial' : 'bold 32px Arial';
+                    ctx.fillStyle = 'white';
+                    ctx.textAlign = 'center';
+                    
+                    // Simple Wrap
+                    const words = scene.text.split(' ');
+                    let line = '';
+                    let lines = [];
+                    const maxW = canvas.width - 60;
+                    
+                    words.forEach((w, i) => {
+                        const test = line + w + ' ';
+                        if(ctx.measureText(test).width > maxW && i > 0) {
+                            lines.push(line);
+                            line = w + ' ';
+                        } else line = test;
+                    });
+                    lines.push(line);
+                    
+                    const lh = isVert ? 45 : 40;
+                    const startY = canvas.height - (boxH/2) - ((lines.length-1)*lh/2) + 15;
+                    lines.forEach((l, k) => ctx.fillText(l, canvas.width/2, startY + (k*lh)));
+                }
+
+                requestAnimationFrame(draw);
+            };
+            draw();
+
+            // Sequencer
+            for(let i=0; i<state.scriptData.length; i++) {
+                currentSceneIdx = i;
+                const pct = Math.round((i / state.scriptData.length) * 100);
+                progress.style.width = `${pct}%`;
+                progressTxt.innerText = `${pct}% Complete`;
+                
+                const s = state.scriptData[i];
+                
+                // Preload Next Image
+                if(i+1 < state.scriptData.length) {
+                    const nextImg = new Image();
+                    nextImg.crossOrigin = "anonymous";
+                    nextImg.src = state.scriptData[i+1].imageSrc;
+                    // Dont await here, just start loading
+                }
+
+                // Update Current Image
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = s.imageSrc;
+                await new Promise(r => img.onload = r);
+                currentImg = img;
+
+                // Play Audio
+                if(s.audioUrl) {
+                    const ab = await (await fetch(s.audioUrl)).arrayBuffer();
+                    const audioBuf = await actx.decodeAudioData(ab);
+                    const src = actx.createBufferSource();
+                    src.buffer = audioBuf;
+                    src.connect(dest);
+                    src.start(0);
+                    await new Promise(r => setTimeout(r, (audioBuf.duration * 1000) + 100));
+                } else {
+                    await new Promise(r => setTimeout(r, 3000));
+                }
+            }
+
+            // Finish
+            progress.style.width = `100%`;
+            isRunning = false;
+            await new Promise(r => setTimeout(r, 1000));
+            rec.stop();
+        }
+
     </script>
 </body>
 </html>
