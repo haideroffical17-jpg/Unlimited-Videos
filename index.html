@@ -8,6 +8,7 @@
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Reliable Icons -->
     <script src="https://unpkg.com/phosphor-icons"></script>
     
     <script>
@@ -42,14 +43,14 @@
         
         /* Glassmorphism */
         .glass-panel { 
-            background: rgba(255, 255, 255, 0.8); 
+            background: rgba(255, 255, 255, 0.85); 
             backdrop-filter: blur(12px); 
             border: 1px solid rgba(255, 255, 255, 0.6); 
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05); 
         }
         
         .glass-dark {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -59,7 +60,7 @@
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         
         .nav-item { transition: all 0.2s; }
-        .nav-item.active { background: #fff; color: #0f172a; font-weight: 700; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-item.active { background: #fff; color: #0f172a; font-weight: 700; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 3px solid #3b82f6; }
         
         .loader { width: 16px; height: 16px; border: 2px solid currentColor; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 0.8s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -76,7 +77,7 @@
     <header class="glass-dark h-16 flex-shrink-0 z-50 px-6 flex items-center justify-between text-white">
         <div class="flex items-center gap-4">
             <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                <i class="ph-video-camera-fill text-xl"></i>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,160H40V56H216V200ZM176,88a48,48,0,0,1-48,48,48,48,0,0,1-48-48,8,8,0,0,1,16,0,32,32,0,0,0,64,0,8,8,0,0,1,16,0Zm-48,80a8,8,0,0,1-8,8H88a8,8,0,0,1,0-16h32A8,8,0,0,1,128,168Z"></path></svg>
             </div>
             <div>
                 <h1 class="font-heading font-bold text-lg leading-tight tracking-tight">Grow With Haider</h1>
@@ -90,8 +91,8 @@
                 <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse" id="headerStatusDot"></span> 
                 <span id="headerStatusText">Setup Required</span>
             </div>
-            <button onclick="openSettings()" class="p-2.5 rounded-full hover:bg-white/15 transition text-white shadow-sm border border-white/10" title="API Settings">
-                <i class="ph-gear-six-fill text-xl"></i>
+            <button onclick="openSettings()" class="p-2.5 rounded-full hover:bg-white/15 transition text-white shadow-sm border border-white/10 flex items-center justify-center" title="API Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.63q-1.48-1.56-3-3t-3.12-2.84l-2.64-23.72a8,8,0,0,0-3.93-6A107.21,107.21,0,0,0,152.84,29.52a8,8,0,0,0-7.06,1.48L127.14,45.92q-2.16-.06-4.32,0L104.18,31a8,8,0,0,0-7.06-1.48A107.21,107.21,0,0,0,70.87,40.4a8,8,0,0,0-3.93,6l-2.64,23.72q-1.56,1.48-3,3t-3.12,2.84L34.46,78.59a8,8,0,0,0-6,3.93A107.21,107.21,0,0,0,17.58,108.77a8,8,0,0,0,1.48,7.06L34,134.47q-.06,2.16,0,4.32L19.06,157.43a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.63q1.48,1.56,3,3t3.12,2.84l2.64,23.72a8,8,0,0,0,3.93,6,107.21,107.21,0,0,0,26.25,10.88,8,8,0,0,0,7.06-1.48l18.64-14.92q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3t3.12-2.84l23.72-2.63a8,8,0,0,0,6-3.93,107.21,107.21,0,0,0,10.88-26.25,8,8,0,0,0-1.48-7.06ZM208,136a80,80,0,1,1-80-80A80.09,80.09,0,0,1,208,136Z"></path></svg>
             </button>
         </div>
     </header>
@@ -140,7 +141,7 @@
                                 <label class="cursor-pointer group relative">
                                     <input type="radio" name="vidFormat" value="long" checked onchange="updateFormat()" class="peer sr-only">
                                     <div class="p-5 rounded-xl border-2 border-slate-100 bg-white peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white transition hover:shadow-lg h-full flex items-center gap-4">
-                                        <i class="ph-monitor-play text-3xl opacity-50 peer-checked:opacity-100"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256" class="opacity-50 peer-checked:opacity-100"><path d="M208,48H48A24,24,0,0,0,24,72V184a24,24,0,0,0,24,24H208a24,24,0,0,0,24-24V72A24,24,0,0,0,208,48Zm8,136a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V72a8,8,0,0,1,8-8H208a8,8,0,0,1,8,8Z"></path></svg>
                                         <div>
                                             <span class="font-bold block text-lg">Long Video</span>
                                             <span class="text-xs opacity-70">16:9 Aspect Ratio (YouTube)</span>
@@ -150,7 +151,7 @@
                                 <label class="cursor-pointer group relative">
                                     <input type="radio" name="vidFormat" value="shorts" onchange="updateFormat()" class="peer sr-only">
                                     <div class="p-5 rounded-xl border-2 border-slate-100 bg-white peer-checked:border-slate-900 peer-checked:bg-slate-900 peer-checked:text-white transition hover:shadow-lg h-full flex items-center gap-4">
-                                        <i class="ph-device-mobile-camera text-3xl opacity-50 peer-checked:opacity-100"></i>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256" class="opacity-50 peer-checked:opacity-100"><path d="M176,24H80A24,24,0,0,0,56,48V208a24,24,0,0,0,24,24h96a24,24,0,0,0,24-24V48A24,24,0,0,0,176,24Zm8,184a8,8,0,0,1-8,8H80a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8h96a8,8,0,0,1,8,8Z"></path></svg>
                                         <div>
                                             <span class="font-bold block text-lg">Shorts / Reels</span>
                                             <span class="text-xs opacity-70">9:16 Aspect Ratio (Vertical)</span>
@@ -704,36 +705,61 @@
         async function generateSingleAudio() {
             if(!state.fullScript) return showToast("No Script!");
             toggleBtn('btnGenAudio', true);
+            
             try {
-                const chunks = splitText(state.fullScript, 2000); 
+                // Chunking
+                const chunks = splitText(state.fullScript, 800); 
+                
                 const ac = new (window.AudioContext||window.webkitAudioContext)();
+                if (ac.state === 'suspended') await ac.resume();
+
                 const bufs = [];
+                
                 for(const c of chunks) {
+                    // Call API
                     const b64 = await callTTS(c, document.getElementById('voiceSelect').value);
-                    const bin = atob(b64); 
-                    const bytes = new Uint8Array(bin.length);
-                    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-                    bufs.push(await ac.decodeAudioData(bytes.buffer));
+                    
+                    // Decode Base64
+                    const bin = atob(b64);
+                    const len = bin.length;
+                    const bytes = new Uint8Array(len);
+                    for (let i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+                    
+                    // Convert PCM16 to AudioBuffer directly (assuming 24kHz mono)
+                    // Create Int16 view of the byte buffer
+                    const int16 = new Int16Array(bytes.buffer);
+                    const audioBuf = ac.createBuffer(1, int16.length, 24000);
+                    const chan = audioBuf.getChannelData(0);
+                    
+                    // Convert Int16 (-32768 to 32767) to Float32 (-1.0 to 1.0)
+                    for(let i=0; i<int16.length; i++) {
+                        chan[i] = int16[i] / 32768.0;
+                    }
+                    
+                    bufs.push(audioBuf);
                 }
+                
                 // Merge
-                const len = bufs.reduce((a,b)=>a+b.length,0);
-                const merged = ac.createBuffer(1, len, bufs[0].sampleRate);
-                const ch = merged.getChannelData(0);
-                let off = 0;
-                for(const b of bufs) { ch.set(b.getChannelData(0), off); off+=b.length; }
+                const totalLen = bufs.reduce((acc, buf) => acc + buf.length, 0);
+                const merged = ac.createBuffer(1, totalLen, 24000);
+                const channelData = merged.getChannelData(0);
+                
+                let offset = 0;
+                for(const buf of bufs) {
+                    channelData.set(buf.getChannelData(0), offset);
+                    offset += buf.length;
+                }
                 
                 // Render
-                const oac = new OfflineAudioContext(1, len, bufs[0].sampleRate);
-                const src = oac.createBufferSource(); src.buffer = merged;
-                src.connect(oac.destination);
-                src.start();
-                const rendered = await oac.startRendering();
-
-                state.audioBlob = bufferToWave(rendered, len);
-                state.audioDuration = rendered.duration;
+                state.audioBlob = bufferToWave(merged, totalLen);
+                state.audioDuration = merged.duration;
                 document.getElementById('mainAudioPlayer').src = URL.createObjectURL(state.audioBlob);
                 document.getElementById('audioResult').classList.remove('hidden');
-            } catch(e) { console.log(e); showToast("Audio Error. Check Keys."); }
+
+            } catch(e) {
+                console.log(e);
+                showToast("Audio Error: " + e.message);
+            }
             toggleBtn('btnGenAudio', false);
         }
 
