@@ -870,7 +870,8 @@
         function toggleBtn(id,l){const b=document.getElementById(id);if(l){b.dataset.o=b.innerHTML;b.innerHTML='<div class="loader"></div>';b.disabled=true}else{b.innerHTML=b.dataset.o;b.disabled=false}}
         function showToast(m){const t=document.getElementById('toast');document.getElementById('toastMsg').innerText=m;t.classList.remove('hidden','translate-y-20');setTimeout(()=>{t.classList.add('translate-y-20');setTimeout(()=>t.classList.add('hidden'),300)},3000)}
         function bufferToWave(ab, len) {
-            const numOfChan = ab.numberOfChannels, length = len * numOfChan * 2 + 44, buffer = new ArrayBuffer(length), view = new DataView(buffer), channels = [], sampleRate = ab.sampleRate, offset = 0, pos = 0;
+            const numOfChan = ab.numberOfChannels, length = len * numOfChan * 2 + 44, buffer = new ArrayBuffer(length), view = new DataView(buffer), channels = [], sampleRate = ab.sampleRate;
+            let offset = 0, pos = 0;
             for(let i=0; i<ab.numberOfChannels; i++) channels.push(ab.getChannelData(i));
             setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157); setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan); setUint32(sampleRate); setUint32(sampleRate * 2 * numOfChan); setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 8);
             for(let i=0; i<ab.length; i++) for(let ch=0; ch<numOfChan; ch++) { let sample = Math.max(-1, Math.min(1, channels[ch][i])); sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF; view.setInt16(pos, sample, true); pos += 2; }
