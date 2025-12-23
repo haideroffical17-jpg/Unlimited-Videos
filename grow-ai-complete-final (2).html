@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grow AI Generator - Complete Version</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+        }
+
+        .branding {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            color: #667eea;
+            z-index: 1000;
+        }
+
+        .auth-container {
+            max-width: 450px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #667eea;
+            font-size: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            min-width: 150px;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .credits-display {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .daily-bonus {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: inline-block;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            background: white;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .gallery-item-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .gallery-item:hover .gallery-item-actions {
+            opacity: 1;
+        }
+
+        .gallery-item-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-download {
+            background: #4CAF50;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+        }
+
+        .btn-delete {
+            background: #f44336;
+        }
+
+        .btn-delete:hover {
+            background: #da190b;
+        }
+
+        .btn-explore {
+            background: #2196F3;
+        }
+
+        .btn-explore:hover {
+            background: #0b7dda;
+        }
+
+        .btn-like {
+            background: #FF4081;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-like:hover {
+            background: #F50057;
+        }
+
+        .btn-like.liked {
+            background: #F50057;
+        }
+
+        .generate-btn {
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-table th, .user-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .user-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .credit-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .credit-input input {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .credit-input button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #4CAF50;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .credit-input button:hover {
+            background: #45a049;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .btn-download-all {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-download-all:hover {
+            background: #45a049;
+        }
+
+        .btn-clear-all {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-clear-all:hover {
+            background: #da190b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            z-index: 999;
+        }
+
+        .logout-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .style-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .style-option:hover, .style-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .admin-checkbox {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .admin-checkbox label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .model-selector {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%);
+            border-radius: 15px;
+            border: 2px solid #667eea;
+        }
+
+        .model-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .model-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .model-option {
+            padding: 15px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            text-align: center;
+        }
+
+        .model-option:hover, .model-option.selected {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .model-option h4 {
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .model-option p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            background: #4CAF50;
+            color: white;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .bulk-generator {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff9e6;
+            border-radius: 15px;
+            border: 2px solid #ffc107;
+        }
+
+        .bulk-generator h3 {
+            color: #f57c00;
+            margin-bottom: 15px;
+        }
+
+        .bulk-progress {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Image Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 1200px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+        }
+
+        .close-modal:hover {
+            color: #f44336;
+        }
+
+        .bulk-live-gallery {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 3px solid #667eea;
+        }
+
+        .bulk-live-gallery h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="branding">⚡ Powered by Grow With Haider</div>
+
+    <!-- Home Page -->
+    <div id="homePage">
+        <div class="container">
+            <div class="header">
+                <h1>🎨 Grow AI Generator</h1>
+                <p>Create Stunning AI Images - Free & Unlimited</p>
+            </div>
+            <div class="auth-container">
+                <h2>Welcome Back!</h2>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Login</button>
+                <button class="btn btn-secondary" onclick="showSignup()">Create New Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signupPage" class="hidden">
+        <div class="container">
+            <div class="header">
+                <h1>🎨 Grow AI Generator</h1>
+                <p>Join Free & Start Creating - Get 1000 FREE Credits!</p>
+            </div>
+            <div class="auth-container">
+                <h2>Create Account</h2>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a password">
+                </div>
+                <button class="btn btn-primary" onclick="signup()">Sign Up Free - Get 1000 Credits</button>
+                <button class="btn btn-secondary" onclick="showLogin()">Already have account? Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboardPage" class="hidden">
+        <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        <div class="container">
+            <div class="header">
+                <h1>🎨 Grow AI Generator</h1>
+                <p id="welcomeText">Welcome back!</p>
+            </div>
+
+            <div class="credits-display" id="creditsDisplay">
+                ⚡ Credits: <span id="creditsCount">0</span>
+                <div id="dailyBonus" class="daily-bonus hidden" onclick="claimDailyBonus()">
+                    🎁 Claim 200 Daily Credits!
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('generate')">✨ Generate</button>
+                <button class="tab" onclick="switchTab('bulk')">🚀 Bulk Generate</button>
+                <button class="tab" onclick="switchTab('history')">📸 My History</button>
+                <button class="tab" onclick="switchTab('explore')">🌟 Explore</button>
+                <button class="tab hidden" id="adminTabBtn" onclick="switchTab('admin')">👑 Admin Panel</button>
+            </div>
+
+            <!-- Generate Tab -->
+            <div class="tab-content active" id="generateTab">
+                <div class="model-selector">
+                    <label>🤖 Select AI Model</label>
+                    <div class="model-options">
+                        <div class="model-option selected" onclick="selectModel(this, 'pollinations', 'generate')">
+                            <h4>Model 1 Fast</h4>
+                            <p>Pollinations AI</p>
+                            <span class="model-badge">FREE</span>
+                        </div>
+                        <div class="model-option" onclick="selectModel(this, 'nano-banana', 'generate')">
+                            <h4>Model 2 Medium</h4>
+                            <p>Nano Banana Pro</p>
+                            <span class="model-badge">FREE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>💭 Describe Your Image</label>
+                    <textarea id="promptInput" placeholder="A beautiful sunset over mountains..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>📐 Aspect Ratio</label>
+                    <select id="aspectRatio">
+                        <option value="1:1">1:1 Square (1 Credit)</option>
+                        <option value="4:3">4:3 Landscape (1 Credit)</option>
+                        <option value="3:4">3:4 Portrait (1 Credit)</option>
+                        <option value="16:9">16:9 Wide (2 Credits)</option>
+                        <option value="9:16">9:16 Story (2 Credits)</option>
+                        <option value="21:9">21:9 Ultra Wide (1 Credit)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>🎨 Art Style</label>
+                    <div class="style-grid">
+                        <div class="style-option selected" onclick="selectStyle(this, 'realistic')">
+                            Realistic
+                        </div>
+                        <div class="style-option" onclick="selectStyle(this, 'anime')">
+                            Anime
+                        </div>
+                        <div class="style-option" onclick="selectStyle(this, 'cartoon')">
+                            Cartoon
+                        </div>
+                        <div class="style-option" onclick="selectStyle(this, 'oil-painting')">
+                            Oil Painting
+                        </div>
+                        <div class="style-option" onclick="selectStyle(this, 'watercolor')">
+                            Watercolor
+                        </div>
+                        <div class="style-option" onclick="selectStyle(this, 'cyberpunk')">
+                            Cyberpunk
+                        </div>
+                    </div>
+                </div>
+
+                <div id="adminAddToExplore" class="admin-checkbox hidden">
+                    <input type="checkbox" id="addToExploreCheck">
+                    <label for="addToExploreCheck">🌟 Add to Public Explore Gallery</label>
+                </div>
+
+                <button class="btn btn-primary generate-btn" onclick="generateImage()">
+                    🎨 Generate Image
+                </button>
+
+                <div id="generatingLoader" class="loading hidden">
+                    <div class="loading-spinner"></div>
+                    <p>Creating your masterpiece...</p>
+                </div>
+            </div>
+
+            <!-- Bulk Generate Tab -->
+            <div class="tab-content" id="bulkTab">
+                <div class="bulk-generator">
+                    <h3>🚀 Bulk Image Generator</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Generate multiple images at once! Each line = One image</p>
+                    
+                    <!-- Model Selector for Bulk -->
+                    <div class="model-selector">
+                        <label>🤖 Select AI Model (All Images)</label>
+                        <div class="model-options">
+                            <div class="model-option selected" onclick="selectModel(this, 'pollinations', 'bulk')">
+                                <h4>Model 1 Fast</h4>
+                                <p>Pollinations AI</p>
+                                <span class="model-badge">FREE</span>
+                            </div>
+                            <div class="model-option" onclick="selectModel(this, 'nano-banana', 'bulk')">
+                                <h4>Model 2 Medium</h4>
+                                <p>Nano Banana Pro</p>
+                                <span class="model-badge">FREE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>💭 Enter Prompts (One per line)</label>
+                        <textarea id="bulkPromptInput" placeholder="Example:
+A beautiful sunset over mountains
+A cute cat playing with yarn
+A futuristic cityscape at night
+(Each line generates one image)" style="min-height: 150px;" oninput="updatePromptCount()"></textarea>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <p style="color: #666; font-size: 14px; margin: 0;">💡 Tip: Each line = One unique image</p>
+                            <p id="promptCount" style="color: #667eea; font-size: 16px; font-weight: 600; margin: 0;">Total: 0 prompts</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>📐 Aspect Ratio (All Images)</label>
+                        <select id="bulkAspectRatio">
+                            <option value="1:1">1:1 Square (1 Credit each)</option>
+                            <option value="4:3">4:3 Landscape (1 Credit each)</option>
+                            <option value="3:4">3:4 Portrait (1 Credit each)</option>
+                            <option value="16:9">16:9 Wide (2 Credits each)</option>
+                            <option value="9:16">9:16 Story (2 Credits each)</option>
+                            <option value="21:9">21:9 Ultra Wide (1 Credit each)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>🎨 Art Style (All Images)</label>
+                        <select id="bulkStyle">
+                            <option value="realistic">Realistic</option>
+                            <option value="anime">Anime</option>
+                            <option value="cartoon">Cartoon</option>
+                            <option value="oil-painting">Oil Painting</option>
+                            <option value="watercolor">Watercolor</option>
+                            <option value="cyberpunk">Cyberpunk</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" style="margin-top: 20px;" onclick="generateBulkImages()">
+                        🚀 Generate All Images
+                    </button>
+
+                    <div id="bulkProgress" class="bulk-progress hidden">
+                        <h4>Generating Images...</h4>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill" style="width: 0%;">0%</div>
+                        </div>
+                        <p id="progressText">0 of 0 completed</p>
+                    </div>
+
+                    <!-- Live Gallery -->
+                    <div id="bulkLiveGallery" class="bulk-live-gallery hidden">
+                        <h3>📸 Generated Images (Live)</h3>
+                        <div class="gallery" id="bulkGalleryGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-content" id="historyTab">
+                <h2 style="margin-bottom: 20px;">📸 My Generated Images</h2>
+                <div class="action-buttons">
+                    <button class="btn-download-all" onclick="downloadAllImages()">
+                        📥 Download All
+                    </button>
+                    <button class="btn-clear-all" onclick="clearAllImages()">
+                        🗑️ Clear All
+                    </button>
+                </div>
+                <div class="gallery" id="historyGallery"></div>
+            </div>
+
+            <!-- Explore Tab -->
+            <div class="tab-content" id="exploreTab">
+                <h2 style="margin-bottom: 20px;">🌟 Public Gallery</h2>
+                <div class="gallery" id="exploreGallery"></div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div class="tab-content" id="adminTab">
+                <h2 style="margin-bottom: 20px;">👑 Admin Dashboard</h2>
+                
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <h3 id="totalUsers">0</h3>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalImages">0</h3>
+                        <p>Total Images</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="exploreImagesCount">0</h3>
+                        <p>Explore Images</p>
+                    </div>
+                </div>
+
+                <h3 style="margin: 30px 0 20px 0;">👥 All Users</h3>
+                <div style="overflow-x: auto;">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email (Gmail)</th>
+                                <th>Password</th>
+                                <th>Credits</th>
+                                <th>Images</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image" onclick="event.stopPropagation()">
+        </div>
+    </div>
+
+    <script>
+        // Database
+        let users = JSON.parse(localStorage.getItem('growai_users')) || [];
+        let images = JSON.parse(localStorage.getItem('growai_images')) || [];
+        let imageLikes = JSON.parse(localStorage.getItem('growai_likes')) || {};
+        let currentUser = JSON.parse(localStorage.getItem('growai_currentUser')) || null;
+        let selectedStyle = 'realistic';
+        let selectedModelGenerate = 'pollinations';
+        let selectedModelBulk = 'pollinations';
+
+        // Admin email
+        const ADMIN_EMAIL = 'Haideroffical16@gmail.com';
+        const DAILY_CREDITS_MAX = 200;
+
+        // Initialize
+        function init() {
+            // Create admin if not exists
+            if (!users.find(u => u.email === ADMIN_EMAIL)) {
+                users.push({
+                    id: Date.now(),
+                    name: 'Admin',
+                    email: ADMIN_EMAIL,
+                    password: 'HaiderAli000',
+                    credits: Infinity,
+                    images: 0,
+                    lastDailyBonus: null,
+                    joinedDate: new Date().toISOString()
+                });
+                saveUsers();
+            }
+
+            if (currentUser) {
+                showDashboard();
+            }
+        }
+
+        // Save functions
+        function saveUsers() {
+            localStorage.setItem('growai_users', JSON.stringify(users));
+        }
+
+        function saveImages() {
+            localStorage.setItem('growai_images', JSON.stringify(images));
+        }
+
+        function saveCurrentUser() {
+            localStorage.setItem('growai_currentUser', JSON.stringify(currentUser));
+        }
+
+        function saveLikes() {
+            localStorage.setItem('growai_likes', JSON.stringify(imageLikes));
+        }
+
+        // Auth functions
+        function showSignup() {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('signupPage').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('signupPage').classList.add('hidden');
+            document.getElementById('homePage').classList.remove('hidden');
+        }
+
+        function signup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+
+            if (!name || !email || !password) {
+                alert('❌ Please fill all fields!');
+                return;
+            }
+
+            if (users.find(u => u.email === email)) {
+                alert('❌ Email already exists!');
+                return;
+            }
+
+            const newUser = {
+                id: Date.now(),
+                name,
+                email,
+                password,
+                credits: 1000,
+                images: 0,
+                lastDailyBonus: Date.now(),
+                joinedDate: new Date().toISOString()
+            };
+
+            users.push(newUser);
+            saveUsers();
+            currentUser = newUser;
+            saveCurrentUser();
+            alert('🎉 Account created! You got 1000 FREE credits!');
+            showDashboard();
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                alert('❌ Invalid email or password!');
+                return;
+            }
+
+            currentUser = user;
+            saveCurrentUser();
+            showDashboard();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('growai_currentUser');
+            location.reload();
+        }
+
+        function showDashboard() {
+            document.getElementById('homePage').classList.add('hidden');
+            document.getElementById('signupPage').classList.add('hidden');
+            document.getElementById('dashboardPage').classList.remove('hidden');
+
+            document.getElementById('welcomeText').textContent = `Welcome back, ${currentUser.name}! 👋`;
+            updateCredits();
+            checkDailyBonus();
+
+            if (currentUser.email === ADMIN_EMAIL) {
+                document.getElementById('adminTabBtn').classList.remove('hidden');
+                document.getElementById('adminAddToExplore').classList.remove('hidden');
+            }
+
+            loadHistory();
+            loadExplore();
+        }
+
+        function updateCredits() {
+            const creditsText = currentUser.credits === Infinity ? '∞ Unlimited' : currentUser.credits;
+            document.getElementById('creditsCount').textContent = creditsText;
+        }
+
+        function checkDailyBonus() {
+            if (currentUser.credits === Infinity) return;
+
+            const now = Date.now();
+            const lastBonus = currentUser.lastDailyBonus || 0;
+            const oneDayMs = 24 * 60 * 60 * 1000;
+
+            // Show bonus only if credits < 200 AND 24h passed
+            if (currentUser.credits < DAILY_CREDITS_MAX && (now - lastBonus >= oneDayMs)) {
+                document.getElementById('dailyBonus').classList.remove('hidden');
+            }
+        }
+
+        function claimDailyBonus() {
+            if (currentUser.credits === Infinity) return;
+
+            // Calculate credits needed to reach 200
+            const creditsToAdd = DAILY_CREDITS_MAX - currentUser.credits;
+            
+            if (creditsToAdd <= 0) {
+                alert('✅ You already have 200+ credits!');
+                document.getElementById('dailyBonus').classList.add('hidden');
+                return;
+            }
+
+            currentUser.credits = DAILY_CREDITS_MAX;
+            currentUser.lastDailyBonus = Date.now();
+
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            users[userIndex] = currentUser;
+            saveUsers();
+            saveCurrentUser();
+            updateCredits();
+
+            document.getElementById('dailyBonus').classList.add('hidden');
+            alert(`🎁 You got ${creditsToAdd} credits! Your balance is now ${DAILY_CREDITS_MAX} credits! Come back tomorrow for more!`);
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            if (tabName === 'admin') {
+                loadAdminPanel();
+            } else if (tabName === 'history') {
+                loadHistory();
+            } else if (tabName === 'explore') {
+                loadExplore();
+            }
+        }
+
+        // Model selection
+        function selectModel(element, model, context) {
+            const container = element.closest('.model-selector');
+            container.querySelectorAll('.model-option').forEach(m => m.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            if (context === 'generate') {
+                selectedModelGenerate = model;
+            } else if (context === 'bulk') {
+                selectedModelBulk = model;
+            }
+        }
+
+        // Style selection
+        function selectStyle(element, style) {
+            document.querySelectorAll('.style-option').forEach(s => s.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedStyle = style;
+        }
+
+        // Bulk generator functions
+        function parseBulkPrompts() {
+            const textarea = document.getElementById('bulkPromptInput').value;
+            const lines = textarea.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            return lines;
+        }
+
+        function updatePromptCount() {
+            const prompts = parseBulkPrompts();
+            const count = prompts.length;
+            const countElement = document.getElementById('promptCount');
+            
+            if (count === 0) {
+                countElement.textContent = 'Total: 0 prompts';
+                countElement.style.color = '#999';
+            } else if (count === 1) {
+                countElement.textContent = 'Total: 1 prompt';
+                countElement.style.color = '#4CAF50';
+            } else {
+                countElement.textContent = `Total: ${count} prompts`;
+                countElement.style.color = '#667eea';
+            }
+        }
+
+        async function generateBulkImages() {
+            const bulkPrompts = parseBulkPrompts();
+            
+            if (bulkPrompts.length === 0) {
+                alert('⚠️ Please enter at least one prompt (one per line)!');
+                return;
+            }
+
+            const ratio = document.getElementById('bulkAspectRatio').value;
+            const style = document.getElementById('bulkStyle').value;
+
+            // Calculate total credits needed
+            let creditsPerImage = 1;
+            if (ratio === '16:9' || ratio === '9:16') creditsPerImage = 2;
+            const totalCredits = bulkPrompts.length * creditsPerImage;
+
+            // Check credits (unless admin)
+            if (currentUser.credits !== Infinity) {
+                if (currentUser.credits < totalCredits) {
+                    const maxImages = Math.floor(currentUser.credits / creditsPerImage);
+                    alert(`❌ Not enough credits!\n\nYou need: ${totalCredits} credits\nYou have: ${currentUser.credits} credits\n\n💡 You can generate ${maxImages} images with your current credits.`);
+                    return;
+                }
+            }
+
+            // Show progress and live gallery
+            const progressDiv = document.getElementById('bulkProgress');
+            const liveGallery = document.getElementById('bulkLiveGallery');
+            const galleryGrid = document.getElementById('bulkGalleryGrid');
+            
+            progressDiv.classList.remove('hidden');
+            liveGallery.classList.remove('hidden');
+            galleryGrid.innerHTML = '';
+
+            const dimensions = {
+                '1:1': '1024x1024',
+                '4:3': '1024x768',
+                '3:4': '768x1024',
+                '16:9': '1280x720',
+                '9:16': '720x1280',
+                '21:9': '1920x820'
+            };
+
+            const size = dimensions[ratio];
+            const width = size.split('x')[0];
+            const height = size.split('x')[1];
+
+            let completed = 0;
+            const total = bulkPrompts.length;
+
+            for (let i = 0; i < bulkPrompts.length; i++) {
+                // Check credits before each image
+                if (currentUser.credits !== Infinity && currentUser.credits < creditsPerImage) {
+                    alert(`⚠️ Not enough credits! Generated ${completed} out of ${total} images.\n\nClaim your daily 200 credits to continue!`);
+                    break;
+                }
+
+                const prompt = bulkPrompts[i];
+                const currentNumber = i + 1;
+                
+                document.getElementById('progressText').innerHTML = `🎨 Creating image ${currentNumber} of ${total}<br><small style="color: #666;">${prompt.substring(0, 60)}${prompt.length > 60 ? '...' : ''}</small>`;
+                
+                const stylePrompt = `${prompt}, ${style} style`;
+                const uniqueSeed = Date.now() + (i * 1000) + Math.floor(Math.random() * 1000);
+                
+                let imageUrl;
+                if (selectedModelBulk === 'nano-banana') {
+                    // Nano Banana Pro - High Quality Settings
+                    imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(stylePrompt)}?width=${width}&height=${height}&model=flux-pro&seed=${uniqueSeed}&nologo=true&enhance=true&quality=100`;
+                } else {
+                    // Pollinations AI - Standard Quality
+                    imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(stylePrompt)}?width=${width}&height=${height}&seed=${uniqueSeed}&nologo=true&enhance=true`;
+                }
+
+                await new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = function() {
+                        // Deduct credits
+                        if (currentUser.credits !== Infinity) {
+                            currentUser.credits -= creditsPerImage;
+                        }
+                        currentUser.images++;
+
+                        // Save image
+                        const newImage = {
+                            id: Date.now() + (i * 1000) + Math.floor(Math.random() * 1000),
+                            userId: currentUser.id,
+                            url: imageUrl,
+                            prompt: prompt,
+                            style: style,
+                            model: selectedModelBulk,
+                            ratio: ratio,
+                            timestamp: new Date().toISOString(),
+                            isPublic: false
+                        };
+
+                        images.push(newImage);
+                        saveImages();
+                        
+                        // Update user
+                        const userIndex = users.findIndex(u => u.id === currentUser.id);
+                        users[userIndex] = currentUser;
+                        saveUsers();
+                        saveCurrentUser();
+
+                        // Add to live gallery
+                        const card = document.createElement('div');
+                        card.className = 'gallery-item';
+                        card.innerHTML = `
+                            <img src="${imageUrl}" alt="${prompt}" onclick="openModal('${imageUrl}')">
+                            <div class="gallery-item-actions">
+                                <button class="btn-download" onclick="downloadImage('${imageUrl}', '${newImage.id}')">📥</button>
+                            </div>
+                        `;
+                        galleryGrid.insertBefore(card, galleryGrid.firstChild);
+
+                        completed++;
+                        const percentage = Math.round((completed / total) * 100);
+                        document.getElementById('progressFill').style.width = percentage + '%';
+                        document.getElementById('progressFill').textContent = percentage + '%';
+
+                        resolve();
+                    };
+
+                    img.onerror = function() {
+                        completed++;
+                        resolve();
+                    };
+
+                    img.src = imageUrl;
+                });
+
+                updateCredits();
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+
+            // Final update
+            loadHistory();
+            
+            setTimeout(() => {
+                progressDiv.classList.add('hidden');
+                document.getElementById('bulkPromptInput').value = '';
+                updatePromptCount();
+                alert(`✅ Successfully generated ${completed} out of ${total} images!`);
+            }, 1000);
+        }
+
+        // Generate single image
+        async function generateImage() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            const ratio = document.getElementById('aspectRatio').value;
+            const addToExplore = document.getElementById('addToExploreCheck').checked;
+
+            if (!prompt) {
+                alert('⚠️ Please enter a prompt!');
+                return;
+            }
+
+            // Calculate credits
+            let creditsNeeded = 1;
+            if (ratio === '16:9' || ratio === '9:16') creditsNeeded = 2;
+
+            // Check credits
+            if (currentUser.credits !== Infinity && currentUser.credits < creditsNeeded) {
+                alert(`❌ Not enough credits! You need ${creditsNeeded} credits.\n\n💡 Claim your daily 200 credits!`);
+                return;
+            }
+
+            // Show loading
+            document.getElementById('generatingLoader').classList.remove('hidden');
+
+            const dimensions = {
+                '1:1': '1024x1024',
+                '4:3': '1024x768',
+                '3:4': '768x1024',
+                '16:9': '1280x720',
+                '9:16': '720x1280',
+                '21:9': '1920x820'
+            };
+
+            const size = dimensions[ratio];
+            const width = size.split('x')[0];
+            const height = size.split('x')[1];
+            const stylePrompt = `${prompt}, ${selectedStyle} style`;
+            
+            let imageUrl;
+            if (selectedModelGenerate === 'nano-banana') {
+                // Nano Banana Pro - High Quality Settings
+                imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(stylePrompt)}?width=${width}&height=${height}&model=flux-pro&seed=${Date.now()}&nologo=true&enhance=true&quality=100`;
+            } else {
+                // Pollinations AI - Standard Quality
+                imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(stylePrompt)}?width=${width}&height=${height}&seed=${Date.now()}&nologo=true&enhance=true`;
+            }
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                // Deduct credits
+                if (currentUser.credits !== Infinity) {
+                    currentUser.credits -= creditsNeeded;
+                }
+                currentUser.images++;
+
+                // Save image
+                const newImage = {
+                    id: Date.now(),
+                    userId: currentUser.id,
+                    url: imageUrl,
+                    prompt: prompt,
+                    style: selectedStyle,
+                    model: selectedModelGenerate,
+                    ratio: ratio,
+                    timestamp: new Date().toISOString(),
+                    isPublic: addToExplore
+                };
+
+                images.push(newImage);
+                saveImages();
+
+                // Update user
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                users[userIndex] = currentUser;
+                saveUsers();
+                saveCurrentUser();
+
+                document.getElementById('generatingLoader').classList.add('hidden');
+                updateCredits();
+                document.getElementById('promptInput').value = '';
+                document.getElementById('addToExploreCheck').checked = false;
+
+                switchTab('history');
+                loadHistory();
+                alert('✅ Image generated successfully!');
+            };
+
+            img.onerror = function() {
+                document.getElementById('generatingLoader').classList.add('hidden');
+                alert('❌ Failed to generate image. Please try again!');
+            };
+
+            img.src = imageUrl;
+        }
+
+        // Load history
+        function loadHistory() {
+            const userImages = images.filter(img => img.userId === currentUser.id).reverse();
+            const gallery = document.getElementById('historyGallery');
+            
+            if (userImages.length === 0) {
+                gallery.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">📸 No images yet. Start generating!</p>';
+                return;
+            }
+
+            gallery.innerHTML = userImages.map(img => `
+                <div class="gallery-item">
+                    <img src="${img.url}" alt="${img.prompt}" onclick="openModal('${img.url}')">
+                    <div class="gallery-item-actions">
+                        <button class="btn-download" onclick="downloadImage('${img.url}', '${img.id}')">📥</button>
+                        <button class="btn-delete" onclick="deleteImage(${img.id})">🗑️</button>
+                        ${currentUser.email === ADMIN_EMAIL ? `
+                            <button class="btn-explore" onclick="toggleExplore(${img.id})">
+                                ${img.isPublic ? '🌟' : '➕'}
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load explore
+        function loadExplore() {
+            const publicImages = images.filter(img => img.isPublic).reverse();
+            const gallery = document.getElementById('exploreGallery');
+            
+            if (publicImages.length === 0) {
+                gallery.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">🌟 No public images yet.</p>';
+                return;
+            }
+
+            gallery.innerHTML = publicImages.map(img => {
+                const likes = imageLikes[img.id] || 0;
+                const hasLiked = imageLikes[`${img.id}_${currentUser.id}`] || false;
+                
+                return `
+                    <div class="gallery-item">
+                        <img src="${img.url}" alt="${img.prompt}" onclick="openModal('${img.url}')">
+                        <div class="gallery-item-actions">
+                            <button class="btn-like ${hasLiked ? 'liked' : ''}" onclick="likeImage(${img.id})">
+                                ❤️ ${likes}
+                            </button>
+                            <button class="btn-download" onclick="downloadImage('${img.url}', '${img.id}')">📥</button>
+                            ${currentUser.email === ADMIN_EMAIL ? `
+                                <button class="btn-delete" onclick="deleteImage(${img.id})">🗑️</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Like image
+        function likeImage(imageId) {
+            const likeKey = `${imageId}_${currentUser.id}`;
+            
+            if (imageLikes[likeKey]) {
+                // Unlike
+                imageLikes[imageId] = (imageLikes[imageId] || 1) - 1;
+                delete imageLikes[likeKey];
+            } else {
+                // Like
+                imageLikes[imageId] = (imageLikes[imageId] || 0) + 1;
+                imageLikes[likeKey] = true;
+            }
+            
+            saveLikes();
+            loadExplore();
+        }
+
+        // Open image modal
+        function openModal(url) {
+            document.getElementById('modalImage').src = url;
+            document.getElementById('imageModal').style.display = 'block';
+        }
+
+        // Close image modal
+        function closeModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        // Download image
+        function downloadImage(url, imageId) {
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = `grow-ai-${imageId}.png`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(blobUrl);
+                })
+                .catch(() => {
+                    alert('❌ Download failed. Please try again!');
+                });
+        }
+
+        // Delete image
+        function deleteImage(imageId) {
+            if (!confirm('🗑️ Are you sure you want to delete this image?')) return;
+
+            images = images.filter(img => img.id !== imageId);
+            saveImages();
+            currentUser.images--;
+
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            users[userIndex] = currentUser;
+            saveUsers();
+            saveCurrentUser();
+
+            loadHistory();
+            loadExplore();
+            alert('✅ Image deleted!');
+        }
+
+        // Toggle explore
+        function toggleExplore(imageId) {
+            const image = images.find(img => img.id === imageId);
+            if (image) {
+                image.isPublic = !image.isPublic;
+                saveImages();
+                loadHistory();
+                loadExplore();
+                alert(image.isPublic ? '✅ Added to Explore!' : '✅ Removed from Explore!');
+            }
+        }
+
+        // Download all
+        function downloadAllImages() {
+            const userImages = images.filter(img => img.userId === currentUser.id);
+            if (userImages.length === 0) {
+                alert('📸 No images to download!');
+                return;
+            }
+
+            let count = 0;
+            userImages.forEach((img, index) => {
+                setTimeout(() => {
+                    downloadImage(img.url, img.id);
+                    count++;
+                    if (count === userImages.length) {
+                        alert(`✅ Downloaded ${count} images!`);
+                    }
+                }, index * 500);
+            });
+        }
+
+        // Clear all
+        function clearAllImages() {
+            const userImages = images.filter(img => img.userId === currentUser.id);
+            if (userImages.length === 0) {
+                alert('📸 No images to clear!');
+                return;
+            }
+
+            if (!confirm(`🗑️ Delete all ${userImages.length} images? This cannot be undone!`)) return;
+
+            images = images.filter(img => img.userId !== currentUser.id);
+            saveImages();
+            currentUser.images = 0;
+
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            users[userIndex] = currentUser;
+            saveUsers();
+            saveCurrentUser();
+
+            loadHistory();
+            alert('✅ All images cleared!');
+        }
+
+        // Load admin panel
+        function loadAdminPanel() {
+            if (currentUser.email !== ADMIN_EMAIL) return;
+
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('totalImages').textContent = images.length;
+            document.getElementById('exploreImagesCount').textContent = images.filter(img => img.isPublic).length;
+
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.email}</td>
+                    <td>${user.password}</td>
+                    <td><strong style="color: ${user.credits === Infinity ? '#F50057' : '#667eea'};">${user.credits === Infinity ? '∞ Unlimited' : user.credits}</strong></td>
+                    <td><strong>${user.images}</strong></td>
+                    <td>
+                        ${user.credits !== Infinity ? `
+                            <div class="credit-input">
+                                <input type="number" id="credits_${user.id}" placeholder="Amount" min="1">
+                                <button onclick="addCredits(${user.id})">➕ Add</button>
+                            </div>
+                        ` : '<span style="color: #F50057; font-weight: 600;">👑 Admin</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Add credits (Admin only)
+        function addCredits(userId) {
+            if (currentUser.email !== ADMIN_EMAIL) return;
+
+            const input = document.getElementById(`credits_${userId}`);
+            const amount = parseInt(input.value);
+
+            if (!amount || amount <= 0) {
+                alert('⚠️ Please enter a valid amount!');
+                return;
+            }
+
+            const user = users.find(u => u.id === userId);
+            if (user && user.credits !== Infinity) {
+                user.credits += amount;
+                saveUsers();
+                
+                if (currentUser.id === userId) {
+                    currentUser = user;
+                    saveCurrentUser();
+                    updateCredits();
+                }
+
+                loadAdminPanel();
+                alert(`✅ Added ${amount} credits to ${user.name}!`);
+            }
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
